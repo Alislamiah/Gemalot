@@ -26,6 +26,17 @@ h1{font-size:24px;margin-bottom:6px}
 .message.success{color:#4ade80}
 .links{margin-top:22px;font-size:14px;color:#9ca3af}
 .links a{color:#facc15;text-decoration:none;font-weight:600}
+
+/* نافذة حفظ كلمة المرور الخاصة بأداة Alislamiah */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center;z-index:100}
+.modal-overlay.show{display:flex}
+.modal{background:#12182b;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:28px;width:90%;max-width:360px;text-align:center}
+.modal h3{margin-bottom:10px;font-size:18px}
+.modal p{color:#9fb8e0;font-size:14px;margin-bottom:22px;line-height:1.5}
+.modal-btns{display:flex;gap:12px}
+.modal-btns button{flex:1;padding:12px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-yes{background:linear-gradient(135deg,#facc15,#f97316);color:#111}
+.btn-no{background:rgba(255,255,255,.1);color:#ccc}
 </style>
 </head>
 <body>
@@ -57,6 +68,18 @@ h1{font-size:24px;margin-bottom:6px}
   <div class="links">لديك حساب بالفعل؟ <a href="signin.html">تسجيل الدخول</a></div>
 </div>
 
+<!-- نافذة سؤال الحفظ في Alislamiah Password Manager -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <h3>حفظ في Alislamiah Password Manager 🔑</h3>
+    <p>هل تريد حفظ هذه البيانات لتظهر في أداة كلمات المرور الخاصة بـ Alislamiah AI؟</p>
+    <div class="modal-btns">
+      <button class="btn-yes" id="saveYesBtn">نعم، احفظها</button>
+      <button class="btn-no" id="saveNoBtn">لا</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
@@ -74,13 +97,10 @@ h1{font-size:24px;margin-bottom:6px}
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  let tempData = null;
+
   function setCurrentUser(u) {
     localStorage.setItem("alislamiah_current_user", JSON.stringify(u));
-  }
-
-  // التوجيه إذا كان مسجلاً مسبقاً
-  if (localStorage.getItem("alislamiah_current_user")) {
-    window.location.href = "index.html";
   }
 
   async function signup() {
@@ -121,11 +141,9 @@ h1{font-size:24px;margin-bottom:6px}
         email: user.email
       });
 
-      msg.className = "message success";
-      msg.textContent = "تم إنشاء الحساب بنجاح، جاري التحويل...";
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 700);
+      // تجهيز البيانات لإظهار نافذة الحفظ الخاصة بـ Alislamiah Password Manager
+      tempData = { name, email: user.email, password };
+      document.getElementById("saveModal").classList.add("show");
 
     } catch (error) {
       msg.className = "message error";
@@ -137,7 +155,34 @@ h1{font-size:24px;margin-bottom:6px}
     }
   }
 
+  function saveYes() {
+    if (!tempData) return;
+
+    let saved = JSON.parse(localStorage.getItem("alislamiah_saved_passwords") || "[]");
+    const exists = saved.find(s => s.email === tempData.email);
+
+    if (!exists) {
+      saved.push({
+        name: tempData.name,
+        email: tempData.email,
+        password: tempData.password,
+        savedAt: new Date().toISOString()
+      });
+      localStorage.setItem("alislamiah_saved_passwords", JSON.stringify(saved));
+    }
+
+    document.getElementById("saveModal").classList.remove("show");
+    window.location.href = "index.html";
+  }
+
+  function saveNo() {
+    document.getElementById("saveModal").classList.remove("show");
+    window.location.href = "index.html";
+  }
+
   document.getElementById("signupBtn").addEventListener("click", signup);
+  document.getElementById("saveYesBtn").addEventListener("click", saveYes);
+  document.getElementById("saveNoBtn").addEventListener("click", saveNo);
 </script>
 </body>
 </html>
