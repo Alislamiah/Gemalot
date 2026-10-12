@@ -40,8 +40,8 @@ h1{font-size:24px;margin-bottom:6px}
     <input type="text" id="name" placeholder="اسمك">
   </div>
   <div class="input-group">
-    <label>البريد الإلكتروني أو رقم الهاتف</label>
-    <input type="text" id="email" placeholder="example@email.com أو 05xxxxxxxx">
+    <label>البريد الإلكتروني</label>
+    <input type="email" id="email" placeholder="example@email.com">
   </div>
   <div class="input-group">
     <label>كلمة المرور</label>
@@ -52,39 +52,92 @@ h1{font-size:24px;margin-bottom:6px}
     <input type="password" id="password2" placeholder="أعد كتابة كلمة المرور">
   </div>
 
-  <button class="btn" onclick="signup()">إنشاء الحساب</button>
+  <button class="btn" id="signupBtn">إنشاء الحساب</button>
   <div class="message" id="msg"></div>
   <div class="links">لديك حساب بالفعل؟ <a href="signin.html">تسجيل الدخول</a></div>
 </div>
 
-<script>
-function getUsers(){return JSON.parse(localStorage.getItem("alislamiah_users")||"[]")}
-function setUsers(u){localStorage.setItem("alislamiah_users",JSON.stringify(u))}
-function setCurrentUser(u){localStorage.setItem("alislamiah_current_user",JSON.stringify(u))}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
 
-if(localStorage.getItem("alislamiah_current_user")){window.location.href="index.html"}
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6kCIokLcdCexAtrfMQAoX0xkjEFv6ANM",
+    authDomain: "gemalot-1de7e.firebaseapp.com",
+    projectId: "gemalot-1de7e",
+    storageBucket: "gemalot-1de7e.firebasestorage.app",
+    messagingSenderId: "301881533004",
+    appId: "1:301881533004:web:6fd2475613ce909bf20ae9",
+    measurementId: "G-RZFRH7NDCD"
+  };
 
-function signup(){
-  const name=document.getElementById("name").value.trim();
-  const email=document.getElementById("email").value.trim().toLowerCase();
-  const password=document.getElementById("password").value;
-  const password2=document.getElementById("password2").value;
-  const msg=document.getElementById("msg");
-  msg.textContent="";msg.className="message";
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-  if(!name||!email||!password){msg.className="message error";msg.textContent="املأ جميع الحقول";return}
-  if(password.length<6){msg.className="message error";msg.textContent="كلمة المرور قصيرة";return}
-  if(password!==password2){msg.className="message error";msg.textContent="كلمة المرور غير متطابقة";return}
+  function setCurrentUser(u) {
+    localStorage.setItem("alislamiah_current_user", JSON.stringify(u));
+  }
 
-  const users=getUsers();
-  if(users.find(u=>u.email===email||u.phone===email)){msg.className="message error";msg.textContent="هذا الحساب موجود مسبقاً";return}
+  // التوجيه إذا كان مسجلاً مسبقاً
+  if (localStorage.getItem("alislamiah_current_user")) {
+    window.location.href = "index.html";
+  }
 
-  const newUser={id:Date.now().toString(),name,email,phone:email.includes("@")?null:email,password};
-  users.push(newUser);
-  setUsers(users);
-  setCurrentUser({id:newUser.id,name:newUser.name,email:newUser.email||newUser.phone});
-  window.location.href="index.html";
-}
+  async function signup() {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const password = document.getElementById("password").value;
+    const password2 = document.getElementById("password2").value;
+    const msg = document.getElementById("msg");
+
+    msg.textContent = "";
+    msg.className = "message";
+
+    if (!name || !email || !password || !password2) {
+      msg.className = "message error";
+      msg.textContent = "يرجى ملء جميع الحقول";
+      return;
+    }
+    if (password.length < 6) {
+      msg.className = "message error";
+      msg.textContent = "كلمة المرور قصيرة جداً";
+      return;
+    }
+    if (password !== password2) {
+      msg.className = "message error";
+      msg.textContent = "كلمتا المرور غير متطابقتين";
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await updateProfile(user, { displayName: name });
+
+      setCurrentUser({
+        id: user.uid,
+        name: name,
+        email: user.email
+      });
+
+      msg.className = "message success";
+      msg.textContent = "تم إنشاء الحساب بنجاح، جاري التحويل...";
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 700);
+
+    } catch (error) {
+      msg.className = "message error";
+      if (error.code === "auth/email-already-in-use") {
+        msg.textContent = "هذا البريد مستخدم بالفعل";
+      } else {
+        msg.textContent = "حدث خطأ: " + error.message;
+      }
+    }
+  }
+
+  document.getElementById("signupBtn").addEventListener("click", signup);
 </script>
 </body>
 </html>
