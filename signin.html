@@ -51,8 +51,8 @@ h1{font-size:24px;margin-bottom:6px}
   <p class="subtitle">مرحباً بك مجدداً في Gemalot</p>
 
   <div class="input-group">
-    <label>البريد الإلكتروني أو رقم الهاتف</label>
-    <input type="text" id="email" placeholder="example@email.com أو 05xxxxxxxx">
+    <label>البريد الإلكتروني</label>
+    <input type="email" id="email" placeholder="example@email.com">
   </div>
 
   <div class="input-group">
@@ -60,11 +60,11 @@ h1{font-size:24px;margin-bottom:6px}
     <input type="password" id="password" placeholder="••••••••">
   </div>
 
-  <button class="btn" onclick="login()">دخول</button>
+  <button class="btn" id="loginBtn">دخول</button>
 
   <div class="divider">أو</div>
 
-  <button class="btn-alt" onclick="loginWithAlislamiah()">
+  <button class="btn-alt" id="alislamiahBtn">
     Sign in with Alislamiah AI
   </button>
 
@@ -75,82 +75,109 @@ h1{font-size:24px;margin-bottom:6px}
   </div>
 </div>
 
-<script>
-function getUsers() {
-  return JSON.parse(localStorage.getItem("alislamiah_users") || "[]");
-}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
 
-function setCurrentUser(user) {
-  localStorage.setItem("alislamiah_current_user", JSON.stringify(user));
-}
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6kCIokLcdCexAtrfMQAoX0xkjEFv6ANM",
+    authDomain: "gemalot-1de7e.firebaseapp.com",
+    projectId: "gemalot-1de7e",
+    storageBucket: "gemalot-1de7e.firebasestorage.app",
+    messagingSenderId: "301881533004",
+    appId: "1:301881533004:web:6fd2475613ce909bf20ae9",
+    measurementId: "G-RZFRH7NDCD"
+  };
 
-// إذا كان مسجلاً مسبقاً ادخل مباشرة
-if (localStorage.getItem("alislamiah_current_user")) {
-  window.location.href = "index.html";
-}
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-function login() {
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const password = document.getElementById("password").value;
-  const msg = document.getElementById("msg");
-
-  msg.textContent = "";
-  msg.className = "message";
-
-  if (!email || !password) {
-    msg.className = "message error";
-    msg.textContent = "يرجى إدخال البريد/الهاتف وكلمة المرور";
-    return;
+  function setCurrentUser(u) {
+    localStorage.setItem("alislamiah_current_user", JSON.stringify(u));
   }
 
-  const users = getUsers();
-  const found = users.find(u => 
-    (u.email === email || u.phone === email) && u.password === password
-  );
-
-  if (!found) {
-    msg.className = "message error";
-    msg.textContent = "البيانات غير صحيحة";
-    return;
-  }
-
-  setCurrentUser({
-    id: found.id,
-    name: found.name,
-    email: found.email || found.phone
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setCurrentUser({
+        id: user.uid,
+        name: user.displayName || user.email.split('@')[0],
+        email: user.email
+      });
+      window.location.href = "index.html";
+    }
   });
 
-  window.location.href = "index.html";
-}
+  async function login() {
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const password = document.getElementById("password").value;
+    const msg = document.getElementById("msg");
 
-function loginWithAlislamiah() {
-  const msg = document.getElementById("msg");
-  msg.textContent = "";
-  msg.className = "message";
-
-  // تحقق من وجود جلسة Alislamiah AI
-  const currentUser = localStorage.getItem("alislamiah_current_user");
-
-  if (currentUser) {
-    // يوجد حساب → ادخل
-    msg.className = "message success";
-    msg.textContent = "تم تسجيل الدخول بحساب Alislamiah AI";
-    setTimeout(function() {
-      window.location.href = "index.html";
-    }, 700);
-  } else {
-    // لا يوجد حساب → حول إلى موقع Alislamiah AI
+    msg.textContent = "";
     msg.className = "message";
-    msg.textContent = "جاري التحويل إلى Alislamiah AI...";
-    setTimeout(function() {
+
+    if (!email || !password) {
+      msg.className = "message error";
+      msg.textContent = "يرجى إدخال البريد وكلمة المرور";
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      setCurrentUser({
+        id: user.uid,
+        name: user.displayName || user.email.split('@')[0],
+        email: user.email
+      });
+
+      window.location.href = "index.html";
+    } catch (error) {
+      msg.className = "message error";
+      msg.textContent = "البريد أو كلمة المرور غير صحيحة";
+    }
+  }
+
+  function loginWithAlislamiah() {
+    const msg = document.getElementById("msg");
+    msg.textContent = "";
+    msg.className = "message";
+
+    // جلب معلومات الجلسة الخاصة بـ Alislamiah AI المخزنة محلياً
+    const currentUserRaw = localStorage.getItem("alislamiah_current_user");
+
+    if (currentUserRaw) {
+      try {
+        const userObj = JSON.parse(currentUserRaw);
+        // تأكيد استخدام نفس بيانات الحساب في Gemalot
+        setCurrentUser(userObj);
+        msg.className = "message success";
+        msg.textContent = "تم تسجيل الدخول بحساب Alislamiah AI بنجاح";
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 700);
+      } catch (e) {
+        redirectToAlislamiah();
+      }
+    } else {
+      redirectToAlislamiah();
+    }
+  }
+
+  function redirectToAlislamiah() {
+    const msg = document.getElementById("msg");
+    msg.className = "message";
+    msg.textContent = "جاري التحويل إلى Alislamiah AI للتحقق من الحساب...";
+    setTimeout(() => {
       window.location.href = "https://mohamedmadoui5195.github.io/Alislamiah-AI/signin.html";
     }, 800);
   }
-}
 
-document.getElementById("password").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") login();
-});
+  document.getElementById("loginBtn").addEventListener("click", login);
+  document.getElementById("alislamiahBtn").addEventListener("click", loginWithAlislamiah);
+  document.getElementById("password").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") login();
+  });
 </script>
 </body>
 </html>
