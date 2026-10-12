@@ -40,6 +40,17 @@ h1{font-size:24px;margin-bottom:6px}
 .divider::before,.divider::after{content:"";position:absolute;top:50%;width:40%;height:1px;background:rgba(255,255,255,.12)}
 .divider::before{right:0}
 .divider::after{left:0}
+
+/* نافذة حفظ كلمة المرور الخاصة بأداة Alislamiah */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center;z-index:100}
+.modal-overlay.show{display:flex}
+.modal{background:#12182b;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:28px;width:90%;max-width:360px;text-align:center}
+.modal h3{margin-bottom:10px;font-size:18px}
+.modal p{color:#9fb8e0;font-size:14px;margin-bottom:22px;line-height:1.5}
+.modal-btns{display:flex;gap:12px}
+.modal-btns button{flex:1;padding:12px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-yes{background:linear-gradient(135deg,#facc15,#f97316);color:#111}
+.btn-no{background:rgba(255,255,255,.1);color:#ccc}
 </style>
 </head>
 <body>
@@ -75,6 +86,18 @@ h1{font-size:24px;margin-bottom:6px}
   </div>
 </div>
 
+<!-- نافذة سؤال الحفظ في Alislamiah Password Manager -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <h3>حفظ في Alislamiah Password Manager 🔑</h3>
+    <p>هل تريد حفظ هذه البيانات لتظهر في أداة كلمات المرور الخاصة بـ Alislamiah AI؟</p>
+    <div class="modal-btns">
+      <button class="btn-yes" id="saveYesBtn">نعم، احفظها</button>
+      <button class="btn-no" id="saveNoBtn">لا</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
@@ -92,6 +115,8 @@ h1{font-size:24px;margin-bottom:6px}
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  let tempData = null;
+
   function setCurrentUser(u) {
     localStorage.setItem("alislamiah_current_user", JSON.stringify(u));
   }
@@ -103,7 +128,6 @@ h1{font-size:24px;margin-bottom:6px}
         name: user.displayName || user.email.split('@')[0],
         email: user.email
       });
-      window.location.href = "index.html";
     }
   });
 
@@ -124,56 +148,60 @@ h1{font-size:24px;margin-bottom:6px}
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      const name = user.displayName || email.split('@')[0];
 
       setCurrentUser({
         id: user.uid,
-        name: user.displayName || user.email.split('@')[0],
+        name: name,
         email: user.email
       });
 
-      window.location.href = "index.html";
+      tempData = { name, email: user.email, password };
+      document.getElementById("saveModal").classList.add("show");
+
     } catch (error) {
       msg.className = "message error";
       msg.textContent = "البريد أو كلمة المرور غير صحيحة";
     }
   }
 
+  function saveYes() {
+    if (!tempData) return;
+
+    let saved = JSON.parse(localStorage.getItem("alislamiah_saved_passwords") || "[]");
+    const exists = saved.find(s => s.email === tempData.email);
+
+    if (!exists) {
+      saved.push({
+        name: tempData.name,
+        email: tempData.email,
+        password: tempData.password,
+        savedAt: new Date().toISOString()
+      });
+      localStorage.setItem("alislamiah_saved_passwords", JSON.stringify(saved));
+    }
+
+    document.getElementById("saveModal").classList.remove("show");
+    window.location.href = "index.html";
+  }
+
+  function saveNo() {
+    document.getElementById("saveModal").classList.remove("show");
+    window.location.href = "index.html";
+  }
+
   function loginWithAlislamiah() {
-    const msg = document.getElementById("msg");
-    msg.textContent = "";
-    msg.className = "message";
-
-    // جلب معلومات الجلسة الخاصة بـ Alislamiah AI المخزنة محلياً
     const currentUserRaw = localStorage.getItem("alislamiah_current_user");
-
     if (currentUserRaw) {
-      try {
-        const userObj = JSON.parse(currentUserRaw);
-        // تأكيد استخدام نفس بيانات الحساب في Gemalot
-        setCurrentUser(userObj);
-        msg.className = "message success";
-        msg.textContent = "تم تسجيل الدخول بحساب Alislamiah AI بنجاح";
-        setTimeout(() => {
-          window.location.href = "index.html";
-        }, 700);
-      } catch (e) {
-        redirectToAlislamiah();
-      }
+      window.location.href = "index.html";
     } else {
-      redirectToAlislamiah();
+      window.location.href = "https://mohamedmadoui5195.github.io/Alislamia-AI/signin.html";
     }
   }
 
-  function redirectToAlislamiah() {
-    const msg = document.getElementById("msg");
-    msg.className = "message";
-    msg.textContent = "جاري التحويل إلى Alislamiah AI للتحقق من الحساب...";
-    setTimeout(() => {
-      window.location.href = "https://mohamedmadoui5195.github.io/Alislamiah-AI/signin.html";
-    }, 800);
-  }
-
   document.getElementById("loginBtn").addEventListener("click", login);
+  document.getElementById("saveYesBtn").addEventListener("click", saveYes);
+  document.getElementById("saveNoBtn").addEventListener("click", saveNo);
   document.getElementById("alislamiahBtn").addEventListener("click", loginWithAlislamiah);
   document.getElementById("password").addEventListener("keypress", function(e) {
     if (e.key === "Enter") login();
