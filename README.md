@@ -200,9 +200,9 @@ if(htmlContent){div.innerHTML=htmlContent;}
 else if(sender==="blocked"){div.innerHTML=text;}
 else{const span=document.createElement("span");span.textContent=text;div.appendChild(span);if(source){const tag=document.createElement("span");tag.className="source-tag";tag.textContent=المصدر: ${source};div.appendChild(document.createElement("br"));div.appendChild(tag);}}
 chatContainer.appendChild(div);window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
-if(save&&sender!"blocked"){messages.push({text,sender,source,html:htmlContent||null});if(!currentChatId)currentChatId=Date.now().toString();saveCurrentChat();}
+if(save&&sender!=="blocked"){messages.push({text,sender,source,html:htmlContent||null});if(!currentChatId)currentChatId=Date.now().toString();saveCurrentChat();}
 }
-function triggerUpload(type){if(!fileInput)return;fileInput.setAttribute("data-type",type);fileInput.accept=type="image"?"image/":"video/";fileInput.click();}
+function triggerUpload(type){if(!fileInput)return;fileInput.setAttribute("data-type",type);fileInput.accept=type==="image"?"image/":"video/";fileInput.click();}
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
 if(fileInput)fileInput.addEventListener("change", async (e)=>{
 const file=e.target.files[0];if(!file)return;
@@ -257,78 +257,27 @@ const chatKnowledge=[
 {roots:["أحكام الصيام","الصيام"],reply:"الصيام ركن من أركان الإسلام، شروطه الإسلام والبلوغ والعقل والإقامة والصحة."},
 {roots:["أحكام سجود السهو"],reply:"سجود السهو مشروع لجبر ما حصل في الصلاة من زيادة أو نقص."},
 {roots:["Gemalot","من أنت"],reply:"Gemalot هو مساعدك الذكي، تم تطويري بواسطة شبكة Alislamiah."},
-{
-roots: ["كيف أرسل رسالة في بريدكم", "كيف أرسل رسائل في بريد أيزن", "طريقة إرسال رسالة في بريد ايزن", "كيفية ارسال رسالة Eisen mail"],
-reply: "لإرسال رسالة عبر البريد:\n1. اضغط على زر (جديد) الموجود في القائمة السفلية.\n2. اكتب بريد الشخص الذي تود الإرسال إليه.\n3. أضف موضوع الرسالة (العنوان أو الفكرة العامة).\n4. اكتب نص الرسالة (المحتوى الذي تريد إرساله)."
-},
-{
-roots: ["الوقت", "أهمية الوقت", "تعبير عن الوقت", "الوقت وأهميته", "استثمار الوقت", "استغلال الوقت"],
-reply: "يعد الوقت من أثمن النعم التي يمتلكها الإنسان، فهو أساس النجاح والتقدم في الحياة.\n\nتكمن أهمية الوقت في أنه يساعد على تحقيق الأهداف وإنجاز الأعمال وتنظيم شؤون الحياة. ويمكن استغلاله من خلال وضع خطة يومية، وتحديد الأولويات، والابتعاد عن الملهيات، والالتزام بالمواعيد. كما أن استثمار الوقت في التعلم والعمل النافع يعود بالفائدة على الفرد والمجتمع.\n\nوفي الختام، فإن حسن استغلال الوقت هو مفتاح النجاح، لذلك يجب المحافظة عليه وعدم إضاعته فيما لا ينفع."
-},
-{
-roots: ["الوطن", "حب الوطن", "تعبير عن حب الوطن", "تعبير عن الوطن", "أهمية الوطن", "واجبنا نحو الوطن"],
-reply: "الوطن ليس مجرد أرض نعيش فوقها، بل هو تاريخنا وذكرياتنا وهويتنا التي نفخر بها بين الأمم. فيه ولدنا، وعلى أرضه نشأنا، ومن خيراته نعيش ونحلم بمستقبل أفضل. لذلك فإن حب الوطن شعور فطري يسكن القلوب، ويجعل الإنسان متعلقًا بأرضه ومخلصًا لها مهما ابتعد عنها.\n\nيتجلى حب الوطن في المحافظة على ممتلكاته العامة، واحترام قوانينه، والعمل بجدٍ وإخلاص من أجل رفعته وتقدمه. فالمواطن الصالح لا يكتفي بالكلام عن حب وطنه، بل يترجمه إلى أفعال نافعة تساهم في تطوره وازدهاره. كما أن طلب العلم، ونشر الأخلاق الحسنة، ومساعدة الآخرين، كلها صور مشرقة من صور حب الوطن. وعندما يتعاون أبناء الوطن ويتحلون بروح المسؤولية، يصبح وطنهم أقوى وأكثر تقدمًا واستقرارًا.\n\nوالوطن يستحق منا الكثير، لأنه يمنحنا الأمن والانتماء والكرامة. لذلك يجب أن نحافظ عليه، وأن ندافع عنه، وأن نسعى دائمًا إلى ترك أثر طيب يساهم في بناء مستقبله المشرق للأجيال القادمة.\n\nوفي الختام، يبقى حب الوطن من أنبل المشاعر وأعظم القيم الإنسانية، فهو مصدر العزة والفخر لكل إنسان. ومن واجبنا أن نحافظ على وطننا ونخدمه بكل ما نستطيع، لأن ازدهاره هو ازدهار لنا جميعًا، ورفعته دليل على إخلاص أبنائه ووفائهم له."
-},
-{
-roots: ["تزخر ولاية الجزائر العاصمة", "تراث الجزائري", "معالم الجزائر العاصمة", "قصبة الجزائر", "تراث العاصمة الجزائرية"],
-reply: "تزخر ولاية الجزائر بتراثٍ تاريخي وثقافي عريق يعكس تعاقب الحضارات التي مرت بها عبر القرون. وتعد قصبة الجزائر من أبرز معالم هذا التراث، إذ تتميز بأزقتها الضيقة ومبانيها التقليدية التي تشهد على عراقة المدينة وتاريخها العثماني. كما تحتضن الولاية العديد من المساجد القديمة والقصور والمتاحف التي تحفظ ذاكرة الجزائر وهويتها الوطنية. ويُضاف إلى ذلك التراث غير المادي المتمثل في الموسيقى الأندلسية والحرف التقليدية والعادات الاجتماعية الأصيلة التي لا تزال حاضرة في الحياة اليومية لسكان العاصمة."
-},
-{
-roots: ["Alislamiah AI", "ماهي Alislamiah AI", "Alislamiah bing", "الإسلامية أي أي", "شبكة الإسلامية"],
-reply: "Alislamiah AI هو محرك البحث الذكي المطور بواسطة شبكة Alislamiah."
-},
-{
-roots: ["Gemalot", "Gemalot AI", "جيمايلوت", "من أنت", "من انت"],
-reply: "Gemalot هو مساعدك الذكي الذاتي، تم تطويري بواسطة شبكة Alislamiah لخدمتك وإجابة استفساراتك."
-},
-{
-roots: ["من الذي صنعك", "من هو مطورك", "المدير العام لشبكة الإسلامية", "من طورك", "من صنعك"],
-reply: "أنا نموذج ذكاء اصطناعي نصي تم تطويري بواسطة شبكة Alislamiah.\nمطوري هو المدير العام لشبكة الإسلامية الرقمية (The General Director of Alislamiah Digital Network)."
-},
-{
-roots: ["Eisen mail", "ماهو Eisen mail", "Alislamiah mail", "بريد ايسن", "بريد الإسلامية"],
-reply: "Eisen Mail هو تطبيق بريد إلكتروني جديد تم تطويره بواسطة Eisen التابعة لشبكة Alislamiah."
-},
-{
-roots: ["التدخين", "تعبير عن التدخين", "أضرار التدخين", "مخاطر التدخين", "الإقلاع عن التدخين", "التدخين السلبي"],
-reply: "يُعدّ التدخين من أكثر الظواهر انتشارًا في المجتمعات المعاصرة، وهو عبارة عن استنشاق الدخان الناتج عن احتراق التبغ الموجود في السجائر أو غيرها من منتجات التدخين. ويحتوي دخان التبغ على مواد كيميائية ضارة تؤثر سلبًا في صحة الإنسان، حيث تسبّب أمراضًا خطيرة مثل أمراض القلب والرئتين والسرطان. ولا تقتصر أضرار التدخين على المدخّن وحده، بل تمتد إلى الأشخاص المحيطين به فيما يُعرف بالتدخين السلبي. كما يؤدي التدخين إلى استنزاف الأموال وإضعاف القدرة البدنية والإنتاجية، لذلك تعمل الهيئات الصحية على نشر الوعي بأخطاره وتشجيع الأفراد على الإقلاع عنه حفاظًا على صحتهم وصحة المجتمع."
-},
-{
-roots: ["المخدرات", "آفة المخدرات", "خطر المخدرات", "أضرار المخدرات", "الإدمان", "مكافحة المخدرات"],
-reply: "تُعتبر المخدرات من أخطر الآفات الاجتماعية التي تهدد الفرد والمجتمع، وهي مواد تؤثر على الجهاز العصبي وتُحدث تغييرًا في وظائف العقل والإدراك والسلوك. يلجأ بعض الأشخاص إلى تعاطي المخدرات بدافع الفضول أو نتيجة تأثير رفقاء السوء أو بسبب المشكلات النفسية والاجتماعية، إلا أن نتائجها غالبًا ما تكون وخيمة. فالإدمان يؤدي إلى تدهور الصحة الجسدية والعقلية، ويؤثر على التحصيل الدراسي والأداء المهني، كما قد يدفع المتعاطي إلى ارتكاب الجرائم للحصول على المال اللازم لشراء هذه المواد. لذلك تبذل الدول جهودًا كبيرة لمكافحة المخدرات من خلال التوعية والعلاج والردع القانوني، من أجل حماية الأفراد وضمان استقرار المجتمع."
-},
-{
-roots: ["الخمر", "أضرار الخمر", "مخاطر الخمر", "شرب الكحول", "تعبير عن الخمر", "أضرار الكحول"],
-reply: "الخمر مشروب يحتوي على نسبة من الكحول تؤثر في العقل والسلوك عند تناوله، ويُعدّ من المشكلات الاجتماعية والصحية التي تعاني منها العديد من المجتمعات. يؤدي شرب الخمر إلى فقدان التركيز وضعف القدرة على اتخاذ القرارات السليمة، وقد يكون سببًا في وقوع حوادث المرور والمشاجرات وغيرها من السلوكات الخطيرة. كما أن الإفراط في تناوله يسبب أضرارًا صحية عديدة، خاصة على الكبد والجهاز العصبي والقلب. بالإضافة إلى ذلك، قد ينعكس تعاطي الخمر سلبًا على العلاقات الأسرية والاجتماعية، فيؤدي إلى النزاعات والتفكك الأسري. ولهذا تسعى المؤسسات التربوية والصحية إلى توعية الناس بمخاطره وتشجيعهم على تبني أساليب حياة صحية وسليمة."
-},
-{
-roots: ["الغش", "أضرار الغش", "مخاطر الغش", "الغش في الدراسة", "الغش التجاري", "تعبير عن الغش", "الامانة والنزاهة"],
-reply: "الغش سلوك غير أخلاقي يقوم على الخداع والتلاعب بهدف الحصول على منفعة أو تحقيق نتيجة لا يستحقها الشخص بجهده الحقيقي. ويظهر الغش في مجالات متعددة، منها الدراسة والتجارة والعمل، حيث يؤدي إلى ضياع الحقوق وإضعاف الثقة بين أفراد المجتمع. ففي المجال الدراسي مثلًا، يمنع الغش التلميذ من اكتساب المعرفة الحقيقية ويجعله يعتمد على أساليب غير مشروعة للنجاح. أما في المعاملات التجارية، فيؤدي إلى الإضرار بالمستهلك وفقدان المصداقية. وتتمثل خطورة الغش في أنه يرسخ قيم الكسل وعدم احترام القوانين، لذلك تحرص المؤسسات التربوية والقانونية على مكافحته ونشر قيم الأمانة والنزاهة بين أفراد المجتمع."
-},
-{
-roots: ["الرشوة", "خطر الرشوة", "مظاهر الفساد", "أضرار الرشوة", "الشفافية والنزاهة", "تعبير عن الرشوة"],
-reply: "تُعرّف الرشوة بأنها تقديم مال أو منفعة أو خدمة لشخص ما مقابل الحصول على امتياز أو خدمة بطريقة غير قانونية أو غير عادلة. وتُعدّ الرشوة من مظاهر الفساد التي تؤثر سلبًا في التنمية والاستقرار الاجتماعي، لأنها تؤدي إلى تفضيل المصالح الشخصية على المصلحة العامة. كما تساهم في ضياع مبدأ تكافؤ الفرص وانتشار الظلم بين المواطنين، حيث يحصل البعض على حقوق أو امتيازات بطرق غير مشروعة. وتنعكس آثار الرشوة على مختلف القطاعات، فتؤثر في الاقتصاد والإدارة والخدمات العامة. لذلك تضع الدول قوانين صارمة لمحاربتها وتشجع على ترسيخ قيم الشفافية والنزاهة واحترام القانون."
-},
-{
-roots: ["أطفال الشوارع", "ظاهرة أطفال الشوارع", "أسباب أطفال الشوارع", "مخاطر أطفال الشوارع", "تعبير عن أطفال الشوارع", "رعاية أطفال الشوارع"],
-reply: "يُطلق مصطلح أطفال الشوارع على الأطفال الذين يقضون معظم أوقاتهم أو يعيشون بشكل دائم في الشوارع دون رعاية أسرية كافية أو حماية اجتماعية مناسبة. وتعود هذه الظاهرة إلى عدة أسباب، منها الفقر والتفكك الأسري وسوء الظروف المعيشية وغياب الاهتمام التربوي. ويواجه أطفال الشوارع العديد من المخاطر، مثل الاستغلال والعنف والحرمان من التعليم والرعاية الصحية، مما يؤثر في نموهم الجسدي والنفسي والاجتماعي. كما أن استمرار هذه الظاهرة يشكل تحديًا للمجتمع، لأنها تحرم الأطفال من حقوقهم الأساسية وتُصعّب عملية اندماجهم في المستقبل. ولذلك تعمل الجمعيات والمؤسسات المختصة على توفير الحماية والدعم النفسي والاجتماعي لهؤلاء الأطفال، مع السعي إلى معالجة الأسباب التي تدفعهم إلى العيش في الشوارع."
-},
-{
-roots: ["كيف أستخدم بريد إيزن", "كيف أستخدم أيزن مايل", "كيف أستخدم بريد الإسلامية", "كيف استخدم Eisen mail", "طريقة استخدام بريد ايزن", "ماذا أفعل لأستخدم Eisen mail"],
-reply: "Eisen Mail هو تطبيق بريد إلكتروني جديد تم تطويره بواسطة Eisen التابعة لشبكة Alislamiah."
-}
+{ roots: ["كيف أرسل رسالة في بريدكم", "كيف أرسل رسائل في بريد أيزن", "طريقة إرسال رسالة في بريد ايزن", "كيفية ارسال رسالة Eisen mail"], reply: "لإرسال رسالة عبر البريد:\n1. اضغط على زر (جديد) الموجود في القائمة السفلية.\n2. اكتب بريد الشخص الذي تود الإرسال إليه.\n3. أضف موضوع الرسالة (العنوان أو الفكرة العامة).\n4. اكتب نص الرسالة (المحتوى الذي تريد إرساله)." },
+{ roots: ["الوقت", "أهمية الوقت", "تعبير عن الوقت", "الوقت وأهميته", "استثمار الوقت", "استغلال الوقت"], reply: "يعد الوقت من أثمن النعم التي يمتلكها الإنسان، فهو أساس النجاح والتقدم في الحياة.\n\nتكمن أهمية الوقت في أنه يساعد على تحقيق الأهداف وإنجاز الأعمال وتنظيم شؤون الحياة. ويمكن استغلاله من خلال وضع خطة يومية، وتحديد الأولويات، والابتعاد عن الملهيات، والالتزام بالمواعيد. كما أن استثمار الوقت في التعلم والعمل النافع يعود بالفائدة على الفرد والمجتمع." },
+{ roots: ["الوطن", "حب الوطن", "تعبير عن حب الوطن", "تعبير عن الوطن", "أهمية الوطن", "واجبنا نحو الوطن"], reply: "الوطن ليس مجرد أرض نعيش فوقها، بل هو تاريخنا وذكرياتنا وهويتنا التي نفخر بها بين الأمم." },
+{ roots: ["تزخر ولاية الجزائر العاصمة", "تراث الجزائري", "معالم الجزائر العاصمة", "قصبة الجزائر", "تراث العاصمة الجزائرية"], reply: "تزخر ولاية الجزائر بتراثٍ تاريخي وثقافي عريق يعكس تعاقب الحضارات التي مرت بها عبر القرون." },
+{ roots: ["Alislamiah AI", "ماهي Alislamiah AI", "Alislamiah bing", "الإسلامية أي أي", "شبكة الإسلامية"], reply: "Alislamiah AI هو محرك البحث الذكي المطور بواسطة شبكة Alislamiah." },
+{ roots: ["Gemalot", "Gemalot AI", "جيمايلوت", "من أنت", "من انت"], reply: "Gemalot هو مساعدك الذكي الذاتي، تم تطويري بواسطة شبكة Alislamiah لخدمتك وإجابة استفساراتك." },
+{ roots: ["من الذي صنعك", "من هو مطورك", "المدير العام لشبكة الإسلامية", "من طورك", "من صنعك"], reply: "أنا نموذج ذكاء اصطناعي نصي تم تطويري بواسطة شبكة Alislamiah.\nمطوري هو المدير العام لشبكة الإسلامية الرقمية (The General Director of Alislamiah Digital Network)." },
+{ roots: ["Eisen mail", "ماهو Eisen mail", "Alislamiah mail", "بريد ايسن", "بريد الإسلامية"], reply: "Eisen Mail هو تطبيق بريد إلكتروني جديد تم تطويره بواسطة Eisen التابعة لشبكة Alislamiah." },
+{ roots: ["التدخين", "تعبير عن التدخين", "أضرار التدخين", "مخاطر التدخين", "الإقلاع عن التدخين", "التدخين السلبي"], reply: "يُعدّ التدخين من أكثر الظواهر انتشارًا في المجتمعات المعاصرة، وهو عبارة عن استنشاق الدخان الناتج عن احتراق التبغ." },
+{ roots: ["المخدرات", "آفة المخدرات", "خطر المخدرات", "أضرار المخدرات", "الإدمان", "مكافحة المخدرات"], reply: "تُعتبر المخدرات من أخطر الآفات الاجتماعية التي تهدد الفرد والمجتمع." },
+{ roots: ["الخمر", "أضرار الخمر", "مخاطر الخمر", "شرب الكحول", "تعبير عن الخمر", "أضرار الكحول"], reply: "الخمر مشروب يحتوي على نسبة من الكحول تؤثر في العقل والسلوك عند تناوله." },
+{ roots: ["الغش", "أضرار الغش", "مخاطر الغش", "الغش في الدراسة", "الغش التجاري", "تعبير عن الغش", "الامانة والنزاهة"], reply: "الغش سلوك غير أخلاقي يقوم على الخداع والتلاعب بهدف الحصول على منفعة." },
+{ roots: ["الرشوة", "خطر الرشوة", "مظاهر الفساد", "أضرار الرشوة", "الشفافية والنزاهة", "تعبير عن الرشوة"], reply: "تُعرّف الرشوة بأنها تقديم مال أو منفعة أو خدمة لشخص ما بطريقة غير قانونية." },
+{ roots: ["أطفال الشوارع", "ظاهرة أطفال الشوارع", "أسباب أطفال الشوارع", "مخاطر أطفال الشوارع", "تعبير عن أطفال الشوارع", "رعاية أطفال الشوارع"], reply: "يُطلق مصطلح أطفال الشوارع على الأطفال الذين يقضون معظم أوقاتهم في الشوارع." },
+{ roots: ["كيف أستخدم بريد إيزن", "كيف أستخدم أيزن مايل", "كيف أستخدم بريد الإسلامية", "كيف استخدم Eisen mail", "طريقة استخدام بريد ايزن", "ماذا أفعل لأستخدم Eisen mail"], reply: "استخدام Eisen Mail كالتالي: سجل الدخول إلى حسابك أو أنشئ حساباً جديداً." }
 ];
 async function fetchGemalotMultiSource(userQuery) {
 const proxyUrl = "https://api.allorigins.win/get?url=";
 const sources = [
-{
-type: "mdn",
-url: https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(userQuery)}
-},
-{
-type: "duckduckgo",
-url: https://api.duckduckgo.com/?q=${encodeURIComponent(userQuery + " programming code")}&format=json
-}
+{ type: "mdn", url: https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(userQuery)} },
+{ type: "duckduckgo", url: https://api.duckduckgo.com/?q=${encodeURIComponent(userQuery + " programming code")}&format=json }
 ];
 try {
 for (let source of sources) {
@@ -349,11 +298,15 @@ return 📖 **من المعرفة العامة والتقنية:**\n\n${data.Abs
 }
 }
 }
-return "عذراً، لم أتمكن من العثور على إجابة دقيقة من المصادر المتعددة حالياً. حاول إعادة صياغة السؤال أو كتابة المصطلحات التقنية بالإنجليزية لنتيجة أفضل.";
+return null;
 } catch (error) {
-console.error("خطأ في جلب البيانات من المصادر المتعددة:", error);
-return "عذراً، حدث خطأ أثناء الاتصال بمصادر المعرفة.";
+return null;
 }
+}async function searchAllSources(q,preferredLang){
+let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
+if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
+for(let l of langs){const r=await searchWikipediaLang(q,l);if(r)return r;}
+return null;
 }
 async function processMessage(text){
 if(!text)text=userInput.value.trim();if(!text)return;
@@ -384,18 +337,31 @@ if(replyLang==='en' && text.includes("الوضوء")) reply="Nullifiers of wudu:
 appendMessage(reply,"ai",true,source);if(lastVoiceInput){speakText(reply);lastVoiceInput=false;}return;
 }
 appendMessage(t.searching,"ai",false);
-const multiSourceResult = await fetchGemalotMultiSource(text);
+let result = null;
+if(isCodingQuery){
+result = await fetchGemalotMultiSource(text);
+}
+if(!result){
+const web = await searchAllSources(text, replyLang);
+if(web){
+result = web.text;
+source = web.source + " (خارجي)";
+}
+} else {
+source = "مصادر تقنية ومفتوحة متعددة (MDN/DuckDuckGo)";
+}
 const last=chatContainer.lastChild;if(last&&last.textContent===t.searching)last.remove();
-if(multiSourceResult){
-appendMessage(multiSourceResult, "ai", true, "مصادر تقنية ومفتوحة متعددة");
-if(lastVoiceInput){speakText(multiSourceResult);lastVoiceInput=false;}
+if(result){
+appendMessage(result, "ai", true, source);
+if(lastVoiceInput){speakText(result);lastVoiceInput=false;}
 } else {
 appendMessage(t.noAnswer,"ai",true,"لا يوجد");
 }
-}function sendSuggestion(txt){processMessage(txt);}
+}
+function sendSuggestion(txt){processMessage(txt);}
 function toggleTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.toggle('open');}
 function closeTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.remove('open');}
-document.addEventListener('click',e=>{const pop=document.getElementById('toolsPopup');const plus=document.getElementById('plusBtn');if(pop&&plus&&!pop.contains(e.target)&&e.target!plus)pop.classList.remove('open');});
+document.addEventListener('click',e=>{const pop=document.getElementById('toolsPopup');const plus=document.getElementById('plusBtn');if(pop&&plus&&!pop.contains(e.target)&&e.target!==plus)pop.classList.remove('open');});
 function updateSendIcon(){
 const val=userInput.value.trim();
 const icon=document.getElementById('sendIcon');const mic=document.getElementById('micBtn');const btn=document.getElementById('sendBtn');
@@ -409,7 +375,7 @@ if(!('speechSynthesis' in window)) return;
 window.speechSynthesis.cancel();
 let clean=text.replace(/<[^>]*>/g,'').slice(0,300);
 const utter=new SpeechSynthesisUtterance(clean);
-utter.lang=currentLang='ar'?'ar-SA':currentLang==='fr'?'fr-FR':'en-US';
+utter.lang=currentLang==='ar'?'ar-SA':currentLang==='fr'?'fr-FR':'en-US';
 window.speechSynthesis.speak(utter);
 }
 let recognition=null;
@@ -438,7 +404,7 @@ applyLanguage(currentLang);renderChatList();updateLimitUI();renderSuggestions();
 let currentImage=null;const editModal=document.getElementById("editModal");const editCanvas=document.getElementById("editCanvas");const ctx=editCanvas?editCanvas.getContext("2d"):null;
 function openEditor(src){if(!editModal||!editCanvas)return;editModal.style.display="flex";currentImage=new Image();currentImage.crossOrigin="anonymous";currentImage.onload=()=>{editCanvas.width=currentImage.width;editCanvas.height=currentImage.height;ctx.drawImage(currentImage,0,0);};currentImage.src=src;}
 function closeEditor(){if(editModal)editModal.style.display="none";}
-function applyFilter(type){if(!ctx||!editCanvas)return;const imageData=ctx.getImageData(0,0,editCanvas.width,editCanvas.height);const data=imageData.data;for(let i=0;i<data.length;i+=4){if(type==="grayscale"){const avg=(data[i]+data[i+1]+data[i+2])/3;data[i]=data[i+1]=data[i+2]=avg;}else if(type==="sepia"){data[i]=Math.min(255,data[i]*0.393+data[i+1]*0.769+data[i+2]*0.189);data[i+1]=Math.min(255,data[i]*0.349+data[i+1]*0.686+data[i+2]*0.168);data[i+2]=Math.min(255,data[i]*0.272+data[i+1]*0.534+data[i+2]0.131);}else if(type==="invert"){data[i]=255-data[i];data[i+1]=255-data[i+1];data[i+2]=255-data[i+2];}else if(type==="bright"){data[i]=Math.min(255,data[i]+30);data[i+1]=Math.min(255,data[i+1]+30);data[i+2]=Math.min(255,data[i+2]+30);}}ctx.putImageData(imageData,0,0);}
+function applyFilter(type){if(!ctx||!editCanvas)return;const imageData=ctx.getImageData(0,0,editCanvas.width,editCanvas.height);const data=imageData.data;for(let i=0;i<data.length;i+=4){if(type==="grayscale"){const avg=(data[i]+data[i+1]+data[i+2])/3;data[i]=data[i+1]=data[i+2]=avg;}else if(type==="sepia"){data[i]=Math.min(255,data[i]*0.393+data[i+1]*0.769+data[i+2]*0.189);data[i+1]=Math.min(255,data[i]*0.349+data[i+1]*0.686+data[i+2]*0.168);data[i+2]=Math.min(255,data[i]*0.272+data[i+1]*0.534+data[i+2]0.131);}else if(type==="invert"){data[i]=255-data[i];data[i+1]=255-data[i+1];data[i+2]=255-data[i+2];}else if(type===brightness){data[i]=Math.min(255,data[i]+30);data[i+1]=Math.min(255,data[i+1]+30);data[i+2]=Math.min(255,data[i+2]+30);}}ctx.putImageData(imageData,0,0);}
 function rotateCanvas(deg){if(!editCanvas||!ctx)return;const tmp=document.createElement("canvas");tmp.width=editCanvas.height;tmp.height=editCanvas.width;const tctx=tmp.getContext("2d");tctx.translate(tmp.width/2,tmp.height/2);tctx.rotate(degMath.PI/180);tctx.drawImage(editCanvas,-editCanvas.width/2,-editCanvas.height/2);editCanvas.width=tmp.width;editCanvas.height=tmp.height;ctx.drawImage(tmp,0,0);}
 function addTextOverlay(){const txt=prompt("اكتب النص:");if(!txt||!ctx)return;ctx.fillStyle="#facc15";ctx.font="bold 40px Arial";ctx.fillText(txt,30,50);}
 function downloadCanvas(){if(!editCanvas)return;const link=document.createElement("a");link.download="gemalot_edited.png";link.href=editCanvas.toDataURL();link.click();}
