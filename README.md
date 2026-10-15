@@ -417,6 +417,51 @@ function applyFilter(type){if(!ctx||!editCanvas)return;const imageData=ctx.getIm
 function rotateCanvas(deg){if(!editCanvas||!ctx)return;const tmp=document.createElement("canvas");tmp.width=editCanvas.height;tmp.height=editCanvas.width;const tctx=tmp.getContext("2d");tctx.translate(tmp.width/2,tmp.height/2);tctx.rotate(deg*Math.PI/180);tctx.drawImage(editCanvas,-editCanvas.width/2,-editCanvas.height/2);editCanvas.width=tmp.width;editCanvas.height=tmp.height;ctx.drawImage(tmp,0,0);}
 function addTextOverlay(){const txt=prompt("اكتب النص:");if(!txt||!ctx)return;ctx.fillStyle="#facc15";ctx.font="bold 40px Arial";ctx.fillText(txt,30,50);}
 function downloadCanvas(){if(!editCanvas)return;const link=document.createElement("a");link.download="gemalot_edited.png";link.href=editCanvas.toDataURL();link.click();}
+
+
+async function fetchGemalotMultiSource(userQuery) {
+  const proxyUrl = "https://api.allorigins.win/get?url=";
+  const sources = [
+    {
+      type: "mdn",
+      url: `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(userQuery)}`
+    },
+    {
+      type: "duckduckgo",
+      url: `https://api.duckduckgo.com/?q=${encodeURIComponent(userQuery + " programming code")}&format=json`
+    }
+  ];
+
+  try {
+    for (let source of sources) {
+      let response = await fetch(proxyUrl + encodeURIComponent(source.url));
+      let wrapper = await response.json();
+      
+      if (wrapper.contents) {
+        let data = JSON.parse(wrapper.contents);
+        
+        if (source.type === "mdn" && data.documents && data.documents.length > 0) {
+          let doc = data.documents[0];
+          return `📚 **من التوثيق التقني (MDN):**\n\n**${doc.title}**\n${doc.summary}\n\n🔗 [رابط التوثيق](https://developer.mozilla.org${doc.mdn_url})`;
+        }
+        
+        if (source.type === "duckduckgo") {
+          if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+            return `💡 **من المصادر البرمجية المفتوحة:**\n\n${data.RelatedTopics[0].Text}`;
+          } else if (data.AbstractText) {
+            return `📖 **من المعرفة العامة والتقنية:**\n\n${data.AbstractText}`;
+          }
+        }
+      }
+    }
+    return "عذراً، لم أتمكن من العثور على إجابة دقيقة من المصادر المتعددة حالياً. حاول إعادة صياغة السؤال أو كتابة المصطلحات التقنية بالإنجليزية لنتيجة أفضل.";
+  } catch (error) {
+    console.error("خطأ في جلب البيانات من المصادر المتعددة:", error);
+    return "عذراً، حدث خطأ أثناء الاتصال بمصادر المعرفة.";
+  }
+}
+
+
 </script>
 </body>
 </html>
