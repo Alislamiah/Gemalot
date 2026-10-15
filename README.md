@@ -287,19 +287,24 @@ function solveMathPro(text){
   }catch{return null;}
 }
 async function safeFetch(url){try{const r=await fetch(url);if(!r.ok)return null;return r;}catch{return null;}}
-async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);if(res){const d=await res.json();if(d.extract&&d.extract.length>40)return {text:d.extract,source:`Wikipedia ${lang}`};}res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`);if(res){const d=await res.json();const first=d.query?.search?.[0]?.title;if(first){res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);if(res){const dd=await res.json();if(dd.extract)return {text:dd.extract,source:`Wikipedia ${lang}`};}}}}catch{}return null;}
-// Eisen.translastor - يجيب الترجمة من الموقع مباشرة (ليس يأخذ إليه)
+// Eisen.translastor - يجيب الترجمة من الموقع مباشرة (فقط عند اختياره من قائمة +)
 async function fetchFromEisen(text, targetLang){
   try{
-    const src = detectLang(text);
-    const to = targetLang || (src==='ar' ? 'en' : 'ar');
+    let src = detectLang(text);
+    let to = (targetLang||'').toLowerCase() || (src==='ar' ? 'en' : 'ar');
+    if(src===to){
+      if(to==='ar') to='en';
+      else if(to==='en') to='ar';
+      else to='en';
+    }
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${src}|${to}`;
     const res = await safeFetch(url);
     if(res){
       const data = await res.json();
       if(data.responseData && data.responseData.translatedText){
         let t = data.responseData.translatedText;
-        if(t.toLowerCase() !== text.toLowerCase() && t.length>0){
+        if(t.includes("PLEASE SELECT") || t.includes("TWO DISTINCT")) return null;
+        if(t.toLowerCase() !== text.toLowerCase() && t.length>0 && t.length<1000){
           return {text: t, source: `Eisen.translastor (${src}→${to}) - https://mohamedmadoui5195.github.io/Eisen.translastor/`};
         }
       }
@@ -307,22 +312,51 @@ async function fetchFromEisen(text, targetLang){
   }catch{}
   return null;
 }
+
+// ===== دوال البرمجة اللي أضفتها - MDN + DuckDuckGo =====
+async function fetchGemalotMultiSource(userQuery){
+  const proxyUrl = "https://api.allorigins.win/get?url=";
+  const sources = [
+    {type:"mdn", url: `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(userQuery)}`},
+    {type:"duckduckgo", url: `https://api.duckduckgo.com/?q=${encodeURIComponent(userQuery + " programming code")}&format=json`}
+  ];
+  try{
+    for(let source of sources){
+      try{
+        let response = await fetch(proxyUrl + encodeURIComponent(source.url));
+        let wrapper = await response.json();
+        if(wrapper.contents){
+          let data = JSON.parse(wrapper.contents);
+          if(source.type==="mdn" && data.documents && data.documents.length>0){
+            let doc = data.documents[0];
+            return `📚 **من التوثيق التقني (MDN):**\n\n**${doc.title}**\n${doc.summary}\n\n🔗 [رابط التوثيق](https://developer.mozilla.org${doc.mdn_url})`;
+          }
+          if(source.type==="duckduckgo"){
+            if(data.RelatedTopics && data.RelatedTopics.length>0){
+              return `💡 **من المصادر البرمجية المفتوحة:**\n\n${data.RelatedTopics[0].Text}`;
+            } else if(data.AbstractText){
+              return `📖 **من المعرفة العامة والتقنية:**\n\n${data.AbstractText}`;
+            }
+          }
+        }
+      }catch(e){ continue; }
+    }
+    return null;
+  }catch(error){
+    return null;
+  }
+}
+
+async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);if(res){const d=await res.json();if(d.extract&&d.extract.length>40)return {text:d.extract,source:`Wikipedia ${lang}`};}res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`);if(res){const d=await res.json();const first=d.query?.search?.[0]?.title;if(first){res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);if(res){const dd=await res.json();if(dd.extract)return {text:dd.extract,source:`Wikipedia ${lang}`};}}}}catch{}return null;}
+
 async function searchAllSources(q,preferredLang){
+  // مصادر عادية فقط - الترجمة لا تعمل تلقائيا
+  // الترجمة تعمل فقط عند اختيارها من قائمة + (askTranslate)
   let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
   if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
-  const lower = q.toLowerCase();
-  if(lower.includes("ترجم") || lower.includes("translate") || lower.startsWith("eisen") || (q.length<200 && q.length>2)){
-    let cleanText = q.replace(/ترجم|translate|eisen|:|إلى|الى/gi,'').trim();
-    if(cleanText.length<3) cleanText = q;
-    if(cleanText.length>0){
-      const eisenResult = await fetchFromEisen(cleanText, preferredLang);
-      if(eisenResult) return eisenResult;
-    }
-  }
-  for(let l of langs){const r=await searchWikipediaLang(q,l);if(r)return r;}
-  if(q.length<300){
-    const fb = await fetchFromEisen(q, preferredLang);
-    if(fb) return fb;
+  for(let l of langs){
+    const r=await searchWikipediaLang(q,l);
+    if(r) return r;
   }
   return null;
 }
@@ -344,24 +378,44 @@ async function processMessage(text){
   if(lower.includes("حل")||text.match(/[0-9x+\-*/^=]/)){const mr=solveMathPro(text);if(mr){appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage(mr,"ai",true,"Math.js");return;}}
   appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
   let reply=null,source=null;
-  for(const item of chatKnowledge){
-    for(const root of item.roots){
-      if(text.toLowerCase().includes(root.toLowerCase()) || root.toLowerCase().includes(text.toLowerCase().trim())){
-        reply=item.reply;source="Gemalot DB - قاعدة بيانات محلية";break;
+  const codingRoots = ["كود", "كيف أصمم", "برمجة", "خطأ", "html", "css", "javascript", "دالة", "تصحيح", "script", "code", "bug", "function", "python", "java"];
+  const isCodingQuery = codingRoots.some(root => lower.includes(root));
+  if(!isCodingQuery){
+    for(const item of chatKnowledge){
+      for(const root of item.roots){
+        if(lower.includes(root.toLowerCase()) || root.toLowerCase().includes(lower.trim())){
+          reply=item.reply;source="Gemalot DB - قاعدة بيانات محلية";break;
+        }
       }
+      if(reply)break;
     }
-    if(reply)break;
   }
-  if(reply){
+  if(reply && !isCodingQuery){
     if(replyLang==='fr' && text.includes("الوضوء")) reply="Les annulations des ablutions: sortie des deux voies, perte de raison, etc.";
     if(replyLang==='en' && text.includes("الوضوء")) reply="Nullifiers of wudu: excretion, loss of reason, touching private parts with desire, etc.";
     appendMessage(reply,"ai",true,source);if(lastVoiceInput){speakText(reply);lastVoiceInput=false;}return;
   }
   appendMessage(t.searching,"ai",false);
-  const web=await searchAllSources(text,replyLang);
+  let result=null;
+  let resultSource=null;
+  if(isCodingQuery){
+    result = await fetchGemalotMultiSource(text);
+    if(result) resultSource = "مصادر تقنية ومفتوحة متعددة (MDN/DuckDuckGo) - دالة برمجة";
+  }
+  if(!result){
+    const web=await searchAllSources(text,replyLang);
+    if(web){
+      result = web.text;
+      resultSource = web.source;
+    }
+  }
   const last=chatContainer.lastChild;if(last&&last.textContent===t.searching)last.remove();
-  if(web){appendMessage(web.text,"ai",true,web.source);if(lastVoiceInput){speakText(web.text);lastVoiceInput=false;}}
-  else{appendMessage(t.noAnswer,"ai",true,"لا يوجد");}
+  if(result){
+    appendMessage(result,"ai",true,resultSource||"Eisen.translastor");
+    if(lastVoiceInput){speakText(result);lastVoiceInput=false;}
+  } else {
+    appendMessage(t.noAnswer,"ai",true,"لا يوجد");
+  }
 }
 function sendSuggestion(txt){processMessage(txt);}
 function toggleTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.toggle('open');}
