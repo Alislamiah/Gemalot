@@ -313,6 +313,33 @@ async function fetchFromEisen(text, targetLang){
   return null;
 }
 
+// ===== Gemini API - مفتاح Alislamiah AI - مضاف حسب الطلب بدون حذف أي شيء =====
+const GEMINI_API_KEY = "AQ.Ab8RN6JwI45ktI8q1FhJosfTqKkgYki0jmgsDsTbmJ5bDZFKJw";
+async function fetchFromGemini(prompt, lang){
+  try{
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    let body = {
+      contents: [{parts: [{text: prompt}]}],
+      generationConfig: {temperature:0.7, maxOutputTokens: 800}
+    };
+    let res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    if(!res.ok){
+      console.log("Gemini status", res.status);
+      return null;
+    }
+    let data = await res.json();
+    let text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+    if(text && text.length>10){
+      return {text: text, source: "Gemini 1.5 Flash (Alislamiah AI API)"};
+    }
+  }catch(e){
+    console.log("Gemini error", e);
+  }
+  return null;
+}
+
+
+
 // ===== دوال البرمجة اللي أضفتها - MDN + DuckDuckGo =====
 async function fetchGemalotMultiSource(userQuery){
   const proxyUrl = "https://api.allorigins.win/get?url=";
@@ -350,13 +377,26 @@ async function fetchGemalotMultiSource(userQuery){
 async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);if(res){const d=await res.json();if(d.extract&&d.extract.length>40)return {text:d.extract,source:`Wikipedia ${lang}`};}res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`);if(res){const d=await res.json();const first=d.query?.search?.[0]?.title;if(first){res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);if(res){const dd=await res.json();if(dd.extract)return {text:dd.extract,source:`Wikipedia ${lang}`};}}}}catch{}return null;}
 
 async function searchAllSources(q,preferredLang){
-  // مصادر عادية فقط - الترجمة لا تعمل تلقائيا
-  // الترجمة تعمل فقط عند اختيارها من قائمة + (askTranslate)
+  // 1- Gemini كمصدر أساسي جديد (مفتاحك)
+  try{
+    let gem = await fetchFromGemini(q, preferredLang);
+    if(gem && gem.text && gem.text.length>20) return gem;
+  }catch(e){}
   let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
   if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
-  for(let l of langs){
-    const r=await searchWikipediaLang(q,l);
-    if(r) return r;
+  const lower = q.toLowerCase();
+  if(lower.includes("ترجم") || lower.includes("translate") || lower.startsWith("eisen") || (q.length<200 && q.length>2)){
+    let cleanText = q.replace(/ترجم|translate|eisen|:|إلى|الى/gi,'').trim();
+    if(cleanText.length<3) cleanText = q;
+    if(cleanText.length>0){
+      const eisenResult = await fetchFromEisen(cleanText, preferredLang);
+      if(eisenResult) return eisenResult;
+    }
+  }
+  for(let l of langs){const r=await searchWikipediaLang(q,l);if(r)return r;}
+  if(q.length<300){
+    const fb = await fetchFromEisen(q, preferredLang);
+    if(fb) return fb;
   }
   return null;
 }
