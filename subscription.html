@@ -1,89 +1,49 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الاشتراك - Gemalot Pro</title>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemalot - الاشتراك</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}body{background:#0b0f19;color:#fff;min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0f19;color:#fff;font-family:Arial;min-height:100vh}
 .header{height:56px;background:linear-gradient(90deg,#facc15,#f97316,#22c55e,#3b82f6);display:flex;align-items:center;gap:12px;padding:0 14px;position:fixed;top:0;left:0;width:100%;z-index:1000}
 .header button{width:38px;height:38px;background:rgba(0,0,0,.25);border:none;border-radius:10px;color:#fff;cursor:pointer;font-size:18px}
-.container{max-width:700px;margin:80px auto;padding:16px}
-.card{background:#111827;border:1px solid #1f2937;border-radius:16px;padding:18px;margin-bottom:16px}
-.card h2{font-size:15px;color:#facc15;margin-bottom:10px}
-.small{font-size:11px;color:#9ca3af;line-height:1.6}
-.btn{width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(90deg,#facc15,#f97316);color:#111;font-weight:bold;cursor:pointer;margin-top:8px;font-size:12px}
+.container{max-width:700px;margin:80px auto 20px;padding:16px}
+.card{background:#111827;border:1px solid #1f2937;border-radius:16px;padding:20px;margin-bottom:16px}
+.card h2{color:#facc15;font-size:16px;margin-bottom:10px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(90deg,#facc15,#f97316);color:#111;font-weight:bold;cursor:pointer;margin-top:10px}
 .btn.secondary{background:#1f2937;color:#fff;border:1px solid #374151}
+.small{font-size:12px;color:#9ca3af;margin-top:8px;line-height:1.6}
 .status{padding:10px;border-radius:10px;margin-top:10px;text-align:center}
 .status.active{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid #22c55e}
 .status.inactive{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid #ef4444}
-.plan{border:1px solid #1f2937;border-radius:14px;padding:14px;background:#0b0f19;margin-bottom:10px}
-.plan h3{font-size:14px;color:#facc15;margin-bottom:6px}
-.price{font-size:11px;color:#e5e7eb;margin:4px 0;padding:6px;background:#111827;border-radius:8px;display:flex;justify-content:space-between;align-items:center}
-.price button{padding:4px 8px;border-radius:6px;border:none;background:#facc15;color:#111;font-size:10px;font-weight:bold;cursor:pointer}
-.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;background:#facc15;color:#111;font-weight:bold;margin-right:6px}
-</style></head>
+.plan{border:1px solid #1f2937;border-radius:12px;padding:14px;text-align:center;background:#0b0f19;margin-bottom:10px}
+.plan.free{border-color:#22c55e}
+.plan.paid{border-color:#facc15}
+</style>
+</head>
 <body>
-<div class="header"><button onclick="location.href='index.html'">←</button><div style="font-weight:bold">الاشتراك - Gemalot Pro</div></div>
+<div class="header"><button onclick="location.href='index.html'">←</button><div>Gemalot - الاشتراك</div></div>
 <div class="container">
-<div class="card"><h2>حالتك</h2><div id="statusBox" class="status inactive">...</div><div id="countInfo" class="small"></div></div>
-<div class="card"><h2>الباقات - بدون سيرفر - 25 رسالة عادي</h2><div class="small">التفعيل يتم من طرف الإدارة فقط. الرسائل يومية، الصور والفيديو بدون سيرفر، 35 مصدر، حل معادلات احترافي عفوي.</div>
-
-<div class="plan"><h3><span class="badge">عادي</span>Normal - 25 رسالة/يوم - مجاني</h3></div>
-
-<div class="plan"><h3>Plus - 45 رسالة/يوم</h3>
-<div class="price"><span>3 أشهر - 25 دولار</span><button onclick="requestSub('plus',90,45,25)">طلب</button></div>
-<div class="price"><span>6 أشهر - 50 دولار</span><button onclick="requestSub('plus',180,45,50)">طلب</button></div>
-<div class="price"><span>9 أشهر - 75 دولار</span><button onclick="requestSub('plus',270,45,75)">طلب</button></div>
-<div class="price"><span>عام - 100 دولار</span><button onclick="requestSub('plus',365,45,100)">طلب</button></div>
-</div>
-
-<div class="plan"><h3>Bronze - 65 رسالة/يوم</h3>
-<div class="price"><span>شهرين - 30 دولار</span><button onclick="requestSub('bronze',60,65,30)">طلب</button></div>
-<div class="price"><span>5 أشهر - 60 دولار</span><button onclick="requestSub('bronze',150,65,60)">طلب</button></div>
-<div class="price"><span>8 أشهر - 90 دولار</span><button onclick="requestSub('bronze',240,65,90)">طلب</button></div>
-<div class="price"><span>عام - 120 دولار</span><button onclick="requestSub('bronze',365,65,120)">طلب</button></div>
-</div>
-
-<div class="plan"><h3>Silver - 75 رسالة/يوم</h3>
-<div class="price"><span>شهر - 50 دولار</span><button onclick="requestSub('silver',30,75,50)">طلب</button></div>
-<div class="price"><span>3 أشهر - 100 دولار</span><button onclick="requestSub('silver',90,75,100)">طلب</button></div>
-<div class="price"><span>5 أشهر - 120 دولار</span><button onclick="requestSub('silver',150,75,120)">طلب</button></div>
-<div class="price"><span>9 أشهر - 150 دولار</span><button onclick="requestSub('silver',270,75,150)">طلب</button></div>
-<div class="price"><span>عام - 200 دولار</span><button onclick="requestSub('silver',365,75,200)">طلب</button></div>
-</div>
-
-<div class="plan"><h3>Gold - 100 رسالة/يوم</h3>
-<div class="price"><span>شهر - 60 دولار</span><button onclick="requestSub('gold',30,100,60)">طلب</button></div>
-<div class="price"><span>3 أشهر - 120 دولار</span><button onclick="requestSub('gold',90,100,120)">طلب</button></div>
-<div class="price"><span>5 أشهر - 160 دولار</span><button onclick="requestSub('gold',150,100,160)">طلب</button></div>
-<div class="price"><span>9 أشهر - 200 دولار</span><button onclick="requestSub('gold',270,100,200)">طلب</button></div>
-<div class="price"><span>عام - 240 دولار</span><button onclick="requestSub('gold',365,100,240)">طلب</button></div>
-</div>
-
-</div>
-<div class="card"><h2>طلباتك</h2><div id="pendingList" class="small">لا يوجد</div></div>
+  <div class="card">
+    <h2>حالة اشتراكك</h2>
+    <div id="statusBox" class="status inactive">✗ وضع عادي</div>
+    <div id="countInfo" class="small"></div>
+  </div>
+  <div class="card">
+    <h2>الخطط المجانية</h2>
+    <div class="plan free"><div style="font-weight:bold">Gemalot Normal - مجاني</div><div class="small">200 رسالة - بدون Gemini - الوضع العادي</div><button class="btn secondary" onclick="location.href='index.html'">مفعل حاليا - مجاني</button></div>
+    <div class="plan free"><div style="font-weight:bold">Gemalot Pro - مجاني</div><div class="small">15 رسالة - الوضع العادي - Gemini - مجاني</div><button class="btn secondary" onclick="location.href='index.html'">مفعل - مجاني</button></div>
+  </div>
+  <div class="card">
+    <h2>الخطط المدفوعة بالاشتراك</h2>
+    <div class="plan paid"><div style="font-weight:bold">🔒 Gemalot Pro Plus</div><div class="small">25 رسالة + مصادر أكثر + Gemini - اشتراك</div><button class="btn" onclick="requestSub('pro_plus',25)">طلب Plus - اشتراك</button></div>
+    <div class="plan paid" style="border-color:#22c55e"><div style="font-weight:bold">🔒 Gemalot Pro Gold</div><div class="small">35 رسالة + فاكثر + Gemini - اشتراك</div><button class="btn" style="background:linear-gradient(90deg,#22c55e,#3b82f6)" onclick="requestSub('pro_gold',35)">طلب Gold - اشتراك</button></div>
+    <div class="plan paid" style="border-color:#f97316"><div style="font-weight:bold">🔒 Gemalot Pro Extra</div><div class="small">50 رسالة + حزمة كاملة + Gemini - اشتراك</div><button class="btn" style="background:linear-gradient(90deg,#facc15,#22c55e)" onclick="requestSub('pro_extra',50)">طلب Extra - اشتراك</button></div>
+  </div>
 </div>
 <script>
-function parseCurrentUser(){const raw=localStorage.getItem("alislamiah_current_user")||"";if(!raw)return {raw:"",name:""};try{const j=JSON.parse(raw);return {raw,name:j.name||j.username||raw,email:j.email||""};}catch{return {raw,name:raw,email:""};}}
 function updateStatus(){
   const active=localStorage.getItem("gemalot_subscription_active")==="true";
   const expiry=localStorage.getItem("gemalot_subscription_expiry");
@@ -91,31 +51,21 @@ function updateStatus(){
   const countInfo=document.getElementById("countInfo");
   const today=localStorage.getItem("gemalot_daily_date");
   const count=localStorage.getItem("gemalot_daily_count")||"0";
-  const allSubs=JSON.parse(localStorage.getItem("gemalot_all_subscriptions")||"{}");
-  const cu=parseCurrentUser();
-  let sub=null;if(allSubs[cu.raw])sub=allSubs[cu.raw];else if(cu.name&&allSubs[cu.name])sub=allSubs[cu.name];
-  const lim=sub?sub.dailyLimit:25;
-  if(active && (!expiry || Date.now()<parseInt(expiry))){
-    box.className="status active"; box.innerHTML=`✓ مشترك ${sub?sub.plan.toUpperCase():"مميز"} - ${lim} رسالة/يوم` + (expiry&&parseInt(expiry)<9999999999999? `<br>ينتهي: ${new Date(parseInt(expiry)).toLocaleString()}` : "<br>مدى الحياة");
-  }else{ box.className="status inactive"; box.innerHTML=`✗ وضع عادي - ${lim} رسالة/يوم`;}
-  countInfo.innerHTML=`التاريخ: ${today||"-"}<br>المستخدمة: ${count}/${lim}<br>${sub?`المرتبة: ${sub.plan} | ${sub.email||""}`:""}`;
+  if(active&&(!expiry||Date.now()<parseInt(expiry))){
+    box.className="status active"; box.innerHTML=`✓ مشترك مميز`;
+  } else {
+    box.className="status inactive"; box.innerHTML=`✗ وضع عادي - مجاني`;
+  }
+  countInfo.innerHTML=`التاريخ: ${today||"-"}<br>الرسائل المستخدمة اليوم: ${count}`;
 }
-function requestSub(plan,days,limit,price){
-  const cu=parseCurrentUser();
-  const user=cu.raw||localStorage.getItem("alislamiah_current_user")||"guest";
+function requestSub(plan,days){
+  const user=localStorage.getItem("alislamiah_current_user")||"guest";
   const requests=JSON.parse(localStorage.getItem("gemalot_sub_requests")||"[]");
-  requests.unshift({user,plan,days,dailyLimit:limit,price,date:new Date().toISOString(),status:"pending"});
+  requests.unshift({user,plan,days,date:new Date().toISOString(),status:"pending"});
   localStorage.setItem("gemalot_sub_requests",JSON.stringify(requests));
-  alert(`تم إرسال طلبك:\nالمرتبة: ${plan.toUpperCase()}\nالرسائل: ${limit}/يوم\nالمدة: ${days} يوم\nالسعر: ${price}$\nالمستخدم: ${user}\n\nالإدارة ستفعل حسابك يدوياً`);
-  renderPending();
+  alert(`تم إرسال طلبك: ${plan} - ${days} يوم - تواصل مع الإدارة للدفع`);
 }
-function renderPending(){
-  const requests=JSON.parse(localStorage.getItem("gemalot_sub_requests")||"[]");
-  const div=document.getElementById("pendingList");
-  if(!requests.length){div.textContent="لا يوجد طلبات";return;}
-  div.innerHTML=requests.map(r=>`${r.date.slice(0,16)} - ${r.user.slice(0,30)} - ${r.plan.toUpperCase()} (${r.dailyLimit} رسالة) - ${r.days} يوم - ${r.price}$ - ${r.status}`).join("<br>");
-}
-updateStatus();renderPending();
+updateStatus();
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</body>
 </html>
