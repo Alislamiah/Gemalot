@@ -305,7 +305,7 @@ async function fetchFromEisen(text, targetLang){
         let t = data.responseData.translatedText;
         if(t.includes("PLEASE SELECT") || t.includes("TWO DISTINCT")) return null;
         if(t.toLowerCase() !== text.toLowerCase() && t.length>0 && t.length<1000){
-          return {text: t, source: `Eisen.translastor (${src}→${to}) - https://mohamedmadoui5195.github.io/Eisen.translastor/`};
+          return {text: t, source: `Eisen.translastor (${src}→${to})`};
         }
       }
     }
@@ -377,26 +377,18 @@ async function fetchGemalotMultiSource(userQuery){
 async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);if(res){const d=await res.json();if(d.extract&&d.extract.length>40)return {text:d.extract,source:`Wikipedia ${lang}`};}res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`);if(res){const d=await res.json();const first=d.query?.search?.[0]?.title;if(first){res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);if(res){const dd=await res.json();if(dd.extract)return {text:dd.extract,source:`Wikipedia ${lang}`};}}}}catch{}return null;}
 
 async function searchAllSources(q,preferredLang){
-  // 1- Gemini كمصدر أساسي جديد (مفتاحك)
+  // 1- Gemini كمصدر أساسي
   try{
     let gem = await fetchFromGemini(q, preferredLang);
     if(gem && gem.text && gem.text.length>20) return gem;
   }catch(e){}
+  // 2- مصادر عادية فقط - الترجمة ممنوعة هنا نهائيا
+  // Eisen.translastor يعمل فقط عند اختيارها من قائمة + (askTranslate)
   let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
   if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
-  const lower = q.toLowerCase();
-  if(lower.includes("ترجم") || lower.includes("translate") || lower.startsWith("eisen") || (q.length<200 && q.length>2)){
-    let cleanText = q.replace(/ترجم|translate|eisen|:|إلى|الى/gi,'').trim();
-    if(cleanText.length<3) cleanText = q;
-    if(cleanText.length>0){
-      const eisenResult = await fetchFromEisen(cleanText, preferredLang);
-      if(eisenResult) return eisenResult;
-    }
-  }
-  for(let l of langs){const r=await searchWikipediaLang(q,l);if(r)return r;}
-  if(q.length<300){
-    const fb = await fetchFromEisen(q, preferredLang);
-    if(fb) return fb;
+  for(let l of langs){
+    const r=await searchWikipediaLang(q,l);
+    if(r) return r;
   }
   return null;
 }
