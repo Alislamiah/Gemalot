@@ -169,12 +169,12 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 <div id="suggestionsBar" class="suggestions"></div>
 
 <div class="tools-popup" id="toolsPopup">
-  <button onclick="triggerUpload('image');closeTools()"><span>🖼️</span> رفع صورة وتعديلها</button>
-  <button onclick="triggerUpload('video');closeTools()"><span>🎥</span> رفع فيديو</button>
+  <button onclick="triggerUpload('image');closeTools()"><span>👁️</span> تحليل صورة - مثل GPT-4 Vision</button>
+  <button onclick="triggerUpload('video');closeTools()"><span>🎥</span> تحليل فيديو - مثل النماذج الأخرى</button>
   <button onclick="askImageGen();closeTools()"><span>🎨</span> إنشاء صورة 4K</button>
   <button onclick="askVideoGen();closeTools()"><span>🎬</span> إنشاء فيديو</button>
   <button onclick="insertPrompt('حل المعادلة: ');closeTools()"><span>🧮</span> حل معادلة</button>
-  <button onclick="askTranslate();closeTools()"><span>🌐</span> Eisen.translastor - ترجمة من الموقع</button>
+  <button onclick="askTranslate();closeTools()"><span>🌐</span> Eisen.translastor - ترجمة فقط</button>
 </div>
 
 <div class="input-area">
@@ -239,19 +239,94 @@ function appendMessage(text,sender,save=true,source,htmlContent){
 }
 function triggerUpload(type){if(!fileInput)return;fileInput.setAttribute("data-type",type);fileInput.accept=type==="image"?"image/*":"video/*";fileInput.click();}
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
+async function analyzeImageWithGemini(base64Data, mimeType, fileName){
+  appendMessage("🔍 جاري تحليل الصورة مثل النماذج الأخرى...","ai",false);
+  try{
+    // إزالة prefix data:image/jpeg;base64,
+    let base64Only = base64Data.split(',')[1] || base64Data;
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    let body = {
+      contents: [{
+        parts: [
+          {text: "حلل هذه الصورة بالتفصيل: ما الذي تراه؟ ما الأشياء الموجودة؟ ما النصوص إن وجدت؟ أعط وصف دقيق مثل نماذج GPT-4 Vision و Gemini Vision. إذا كان سؤال عن سعر أو مكان بيع، حاول تقديره من الصورة."},
+          {inline_data: {mime_type: mimeType, data: base64Only}}
+        ]
+      }]
+    };
+    let res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+    if(res.ok){
+      let data = await res.json();
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(text){
+        let html = `<div>🖼️ تحليل: ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)"><div style="margin-top:10px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px;font-size:13px;line-height:1.6;border:1px solid #1e293b">` + text.replace(/</g,'&lt;').replace(/\n/g,'<br>') + `</div>`;
+        appendMessage(text,"ai",true,"Gemini Vision - تحليل الصور مثل GPT-4V", html);
+        return;
+      }
+    } else {
+      let err = await res.text();
+      console.log("Vision error", err);
+      if(res.status==400){
+        let html = `<div>🖼️ ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px"><div style="margin-top:10px;background:#7f1d1d;color:#fff;padding:10px;border-radius:8px;font-size:12px">⚠️ فشل تحليل الصورة: المفتاح AQ. غير صالح لـ Vision. احتاج مفتاح AIza... من aistudio.google.com<br>لكن الصورة تم رفعها بنجاح.</div>`;
+        let last2 = chatContainer.lastChild; if(last2 && last2.textContent.includes("جاري تحليل")) last2.remove();
+        appendMessage("تم رفع الصورة لكن التحليل فشل بسبب المفتاح", "ai", true, "محلي - خطأ مفتاح", html);
+        return;
+      }
+    }
+  }catch(e){ console.log("Vision exception", e); }
+  let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+  // Fallback محلي
+  let htmlFallback=`<div>🖼️ ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)"><div style="margin-top:8px;color:#94a3b8;font-size:11px">تم الرفع - التحليل المحلي: صورة ${mimeType}</div>`;
+  appendMessage("✅ تم رفع الصورة! (التحليل المحلي)", "ai", true, "محلي", htmlFallback);
+}
+
+async function analyzeVideoWithGemini(base64Data, mimeType, fileName){
+  appendMessage("🎥 جاري تحليل الفيديو مثل النماذج الأخرى...","ai",false);
+  try{
+    let base64Only = base64Data.split(',')[1] || base64Data;
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    let body = {
+      contents: [{
+        parts: [
+          {text: "حلل هذا الفيديو: ما الذي يحدث؟ صف المحتوى، الأشخاص، الأشياء، الحركة. مثل نماذج تحليل الفيديو."},
+          {inline_data: {mime_type: mimeType, data: base64Only}}
+        ]
+      }]
+    };
+    let res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+    if(res.ok){
+      let data = await res.json();
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(text){
+        let html = `<div>🎥 تحليل: ${fileName}</div><video src="${base64Data}" controls style="max-width:100%;border-radius:12px"></video><div style="margin-top:10px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px">` + text.replace(/</g,'&lt;').replace(/\n/g,'<br>') + `</div>`;
+        appendMessage(text,"ai",true,"Gemini Vision - تحليل الفيديو", html);
+        return;
+      }
+    }
+  }catch(e){ console.log(e); }
+  let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+  let htmlFallback=`<div>🎥 ${fileName}</div><video src="${base64Data}" controls style="max-width:100%;border-radius:12px"></video>`;
+  appendMessage("✅ تم رفع الفيديو!", "ai", true, "محلي", htmlFallback);
+}
+
 if(fileInput)fileInput.addEventListener("change", async (e)=>{
   const file=e.target.files[0];if(!file)return;
-  if(file.size>8*1024*1024){alert('الملف كبير');e.target.value='';return;}
+  if(file.size>12*1024*1024){alert('الملف كبير (أقصى 12MB)');e.target.value='';return;}
   try{
     const base64=await fileToBase64(file);
     if(file.type.startsWith("image/")){
-      const html=`<div>🖼️ ${file.name}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الصورة!","ai",true,"محلي");
+      const htmlPreview=`<div>🖼️ ${file.name}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
+      appendMessage(file.name,"user",true,null,htmlPreview);
+      await analyzeImageWithGemini(base64, file.type, file.name);
+    }else if(file.type.startsWith("video/")){
+      const htmlPreview=`<div>🎥 ${file.name}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
+      appendMessage(file.name,"user",true,null,htmlPreview);
+      await analyzeVideoWithGemini(base64, file.type, file.name);
     }else{
-      const html=`<div>🎥 ${file.name}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
+      const html=`<div>📄 ${file.name}</div>`;
       appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الفيديو!","ai",true,"محلي");
+      appendMessage("✅ تم رفع الملف!","ai",true,"محلي");
     }
   }catch{alert('خطأ في الرفع');}
   e.target.value='';
@@ -316,27 +391,150 @@ async function fetchFromEisen(text, targetLang){
 // ===== Gemini API - مفتاح Alislamiah AI - مضاف حسب الطلب بدون حذف أي شيء =====
 const GEMINI_API_KEY = "AQ.Ab8RN6JwI45ktI8q1FhJosfTqKkgYki0jmgsDsTbmJ5bDZFKJw";
 async function fetchFromGemini(prompt, lang){
+  // دعم المفتاح الجديد AQ. والمفتاح القديم AIza...
   try{
-    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    console.log("Gemini key prefix:", GEMINI_API_KEY.slice(0,4), "len:", GEMINI_API_KEY.length);
+    // الطريقة 1: ?key= (القديمة)
+    let url1 = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    // الطريقة 2: x-goog-api-key header (الجديدة لـ AQ.)
+    let url2 = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    
     let body = {
       contents: [{parts: [{text: prompt}]}],
-      generationConfig: {temperature:0.7, maxOutputTokens: 800}
+      generationConfig: {temperature:0.7, maxOutputTokens: 1000}
     };
-    let res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
-    if(!res.ok){
-      console.log("Gemini status", res.status);
-      return null;
-    }
-    let data = await res.json();
-    let text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
-    if(text && text.length>10){
-      return {text: text, source: "Gemini 1.5 Flash (Alislamiah AI API)"};
-    }
+    
+    // جرب الطريقة 2 أولاً (تدعم AQ.)
+    try{
+      let res = await fetch(url2, {
+        method:"POST",
+        headers:{"Content-Type":"application/json", "x-goog-api-key": GEMINI_API_KEY},
+        body: JSON.stringify(body)
+      });
+      console.log("Gemini x-goog-api-key status:", res.status);
+      if(res.ok){
+        let data = await res.json();
+        let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(text && text.length>5) return {text: text, source: "Gemini 1.5 Flash (AQ key - x-goog-api-key)"};
+      } else {
+        let err = await res.text();
+        console.log("Gemini x-goog error:", err.slice(0,400));
+      }
+    }catch(e){ console.log("x-goog method failed", e); }
+    
+    // جرب الطريقة 1 كـ fallback
+    try{
+      let res2 = await fetch(url1, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(body)
+      });
+      console.log("Gemini ?key= status:", res2.status);
+      if(res2.ok){
+        let data2 = await res2.json();
+        let text2 = data2.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(text2 && text2.length>5) return {text: text2, source: "Gemini 1.5 Flash (?key=)"};
+      } else {
+        let err2 = await res2.text();
+        console.log("Gemini ?key error:", err2.slice(0,400));
+        if(res2.status==400 && err2.includes("API_KEY_INVALID")){
+          return {text: "⚠️ المفتاح " + GEMINI_API_KEY.slice(0,15) + "... غير صالح حسب Google.\n\nتأكد أنك نسخت المفتاح كاملاً من aistudio.google.com/app/apikey\nالمفتاح في الصورة: AQ.Ab8RN6... قد يحتاج تفعيل Generative Language API في Google Cloud Console.\n\nسؤالك: " + prompt, source: "Gemini - مفتاح يحتاج تفعيل"};
+        }
+      }
+    }catch(e2){ console.log("?key method failed", e2); }
+    
   }catch(e){
-    console.log("Gemini error", e);
+    console.log("Gemini total error", e);
   }
   return null;
 }
+
+async function analyzeImageWithGemini(base64Data, mimeType, fileName){
+  appendMessage("🔍 جاري تحليل الصورة بـ Gemini Vision...","ai",false);
+  try{
+    let base64Only = base64Data.split(',')[1] || base64Data;
+    // جرب x-goog-api-key للصور أيضاً
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    let body = {
+      contents: [{
+        parts: [
+          {text: "حلل هذه الصورة بالتفصيل: ما الذي تراه؟ ما الأشياء؟ النصوص؟ الألوان؟ إذا سأل عن سعر أو مكان بيع، قدر من الصورة. أجب بالعربية."},
+          {inline_data: {mime_type: mimeType, data: base64Only}}
+        ]
+      }]
+    };
+    let res = await fetch(url, {
+      method:"POST",
+      headers:{"Content-Type":"application/json", "x-goog-api-key": GEMINI_API_KEY},
+      body: JSON.stringify(body)
+    });
+    let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+    if(res.ok){
+      let data = await res.json();
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(text){
+        let html = `<div>🖼️ تحليل: ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)"><div style="margin-top:10px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px;font-size:13px;line-height:1.6">` + text.replace(/</g,'&lt;').replace(/\n/g,'<br>') + `</div>`;
+        appendMessage(text,"ai",true,"Gemini Vision - تحليل الصور", html);
+        return;
+      }
+    } else {
+      let err = await res.text();
+      console.log("Vision error", res.status, err.slice(0,500));
+      // Fallback ب?key=
+      try{
+        let url2 = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+        let res2 = await fetch(url2, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+        let last2 = chatContainer.lastChild; if(last2 && last2.textContent.includes("جاري تحليل")) last2.remove();
+        if(res2.ok){
+          let data2 = await res2.json();
+          let text2 = data2.candidates?.[0]?.content?.parts?.[0]?.text;
+          if(text2){
+            let html2 = `<div>🖼️ تحليل: ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px"><div style="margin-top:10px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px">` + text2.replace(/\n/g,'<br>') + `</div>`;
+            appendMessage(text2,"ai",true,"Gemini Vision", html2);
+            return;
+          }
+        }
+      }catch(e){}
+      let htmlErr = `<div>🖼️ ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px"><div style="margin-top:10px;background:#7f1d1d;color:#fff;padding:10px;border-radius:8px;font-size:12px">فشل التحليل: ${res.status} - المفتاح AQ. قد يحتاج تفعيل API<br>الخطأ: ${err.slice(0,200)}</div>`;
+      appendMessage("تم رفع الصورة لكن التحليل فشل", "ai", true, "محلي", htmlErr);
+      return;
+    }
+  }catch(e){ console.log("Vision exception", e); }
+  let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+  let htmlFallback=`<div>🖼️ ${fileName}</div><img src="${base64Data}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
+  appendMessage("✅ تم رفع الصورة!", "ai", true, "محلي", htmlFallback);
+}
+
+async function analyzeVideoWithGemini(base64Data, mimeType, fileName){
+  appendMessage("🎥 جاري تحليل الفيديو...","ai",false);
+  try{
+    let base64Only = base64Data.split(',')[1] || base64Data;
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    let body = {
+      contents: [{
+        parts: [
+          {text: "حلل هذا الفيديو: ما الذي يحدث؟ صف المحتوى."},
+          {inline_data: {mime_type: mimeType, data: base64Only}}
+        ]
+      }]
+    };
+    let res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json", "x-goog-api-key": GEMINI_API_KEY}, body: JSON.stringify(body)});
+    let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+    if(res.ok){
+      let data = await res.json();
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(text){
+        let html = `<div>🎥 تحليل: ${fileName}</div><video src="${base64Data}" controls style="max-width:100%;border-radius:12px"></video><div style="margin-top:10px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px">` + text.replace(/\n/g,'<br>') + `</div>`;
+        appendMessage(text,"ai",true,"Gemini Vision Video", html);
+        return;
+      }
+    }
+  }catch(e){ console.log(e); }
+  let last = chatContainer.lastChild; if(last && last.textContent.includes("جاري تحليل")) last.remove();
+  let htmlFallback=`<div>🎥 ${fileName}</div><video src="${base64Data}" controls style="max-width:100%;border-radius:12px"></video>`;
+  appendMessage("✅ تم رفع الفيديو!", "ai", true, "محلي", htmlFallback);
+}
+
 
 
 
@@ -374,30 +572,68 @@ async function fetchGemalotMultiSource(userQuery){
   }
 }
 
-async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);if(res){const d=await res.json();if(d.extract&&d.extract.length>40)return {text:d.extract,source:`Wikipedia ${lang}`};}res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`);if(res){const d=await res.json();const first=d.query?.search?.[0]?.title;if(first){res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);if(res){const dd=await res.json();if(dd.extract)return {text:dd.extract,source:`Wikipedia ${lang}`};}}}}catch{}return null;}
+async function searchWikipediaLang(q,lang){
+  try{
+    let cleanQ = q;
+    cleanQ = cleanQ.replace(/هل تصنع|كم سعر|أين تباع|ما هو سعر|بكم|هل|ما|ماذا|كيف|كم|أين|متى|لماذا|سعر|تباع|تصنع|هذا|هذه/gi,'').trim();
+    if(cleanQ.length<2) cleanQ = q;
+    let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ)}`);
+    if(res){
+      const d=await res.json();
+      if(d.extract && d.extract.length>40 && d.title && !d.title.toLowerCase().includes("not found")) return {text:d.extract,source:`Wikipedia ${lang} - ${d.title}`};
+    }
+    let keywords = cleanQ.split(' ').filter(w=>w.length>2).slice(0,3).join(' ');
+    if(!keywords) keywords = cleanQ;
+    res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(keywords)}&format=json&origin=*`);
+    if(res){
+      const d=await res.json();
+      let results = d.query?.search || [];
+      let first = results[0]?.title;
+      if(first){
+        res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);
+        if(res){
+          const dd=await res.json();
+          if(dd.extract && dd.extract.length>40) return {text:dd.extract,source:`Wikipedia ${lang} - ${dd.title}`};
+        }
+      }
+    }
+  }catch(e){ console.log("Wiki error", e); }
+  return null;
+}
 
 async function searchAllSources(q,preferredLang){
-  // 1- Gemini كمصدر أساسي
   try{
     let gem = await fetchFromGemini(q, preferredLang);
     if(gem && gem.text && gem.text.length>20) return gem;
+  }catch(e){ console.log("Gemini fail", e); }
+  try{
+    let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
+    if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
+    let keywordQ = q.replace(/هل تصنع|كم سعر|أين تباع|ما هو سعر|بكم/gi,'').trim();
+    if(keywordQ.length<3) keywordQ = q;
+    for(let l of langs){
+      const r=await searchWikipediaLang(keywordQ,l);
+      if(r) return r;
+    }
   }catch(e){}
-  // 2- مصادر عادية فقط - الترجمة ممنوعة هنا نهائيا
-  // Eisen.translastor يعمل فقط عند اختيارها من قائمة + (askTranslate)
-  let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
-  if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
-  for(let l of langs){
-    const r=await searchWikipediaLang(q,l);
-    if(r) return r;
+  let lower = q.toLowerCase();
+  if(lower.includes("سعر") || lower.includes("تباع") || lower.includes("أين")){
+    return {text: "سؤالك: \"" + q + "\"\n\nمعلومات الأسعار تتغير ولا توجد في ويكيبيديا. استخدم Gemini بمفتاح صحيح يبدأ بـ AIza. المفتاح الحالي يبدأ بـ AQ. وهو غير صالح لـ Gemini. احصل على مفتاح من aistudio.google.com", source: "Gemalot - تنبيه"};
   }
-  return null;
+  return {text: "أنا Gemalot. سؤالك: \"" + q + "\"\n\nإذا ظهر بلوتوث بدل مايكروسوفت، فذلك لأن البحث لم يجد المقال. جرب كلمات مفتاحية قصيرة: \"مايكروسوفت\"", source: "Gemalot Fallback"};
 }
+
 const chatKnowledge=[
-  {roots:["كيف يمكنك مساعدتك","مرحبا","السلام عليكم","أهلا"],reply:"وعليكم السلام! أنا Gemalot مساعدك الذكي Alislamiah-AI، جاهز لإجابتك."},
+  {roots:["كيف يمكنك مساعدتك","مرحبا","السلام عليكم","أهلا","سلام"],reply:"وعليكم السلام! أنا Gemalot مساعدك الذكي Alislamiah-AI، جاهز لإجابتك. عندك 200 رسالة يومياً، والترجمة فقط من قائمة +"},
   {roots:["نواقض الوضوء"],reply:"نواقض الوضوء: الخارج من السبيلين، زوال العقل، مس الفرج بشهوة، أكل لحم الإبل، وغيرها."},
   {roots:["أحكام الصيام","الصيام"],reply:"الصيام ركن من أركان الإسلام، شروطه الإسلام والبلوغ والعقل والإقامة والصحة."},
   {roots:["أحكام سجود السهو"],reply:"سجود السهو مشروع لجبر ما حصل في الصلاة من زيادة أو نقص."},
-  {roots:["Gemalot","من أنت"],reply:"Gemalot هو مساعدك الذكي، تم تطويري بواسطة شبكة Alislamiah."}
+  {roots:["Gemalot","من أنت","ماهو جيمالوت"],reply:"Gemalot هو مساعدك الذكي، تم تطويري بواسطة شبكة Alislamiah. الشريط العلوي متدرج أصفر برتقالي أخضر أزرق، وعندك 200 رسالة، وGemini كمصدر أساسي، وEisen.translastor للترجمة فقط من قائمة +."},
+  {roots:["كم رسالة","200","الحد"],reply:"عندك 200 رسالة يومياً في Gemalot Normal. Bronze 65، Plus 45، Silver 75 مقفلة."},
+  {roots:["الترجمة","Eisen","translastor"],reply:"الترجمة Eisen.translastor تعمل فقط عند اختيارها من قائمة + (الزائد). اضغط + ثم اختر 🌐 Eisen.translastor، لن تترجم الرسائل تلقائياً أبداً."},
+  {roots:["Gemini","جيميناي","المصادر"],reply:"المصادر الحالية: 1- Gemini 1.5 Flash (مفتاحك AQ.Ab8RN...), 2- Wikipedia (ar/en/fr...), 3- Eisen.translastor (فقط من +), 4- MDN/DuckDuckGo للبرمجة, 5- قاعدة البيانات المحلية هذه."},
+  {roots:["كود","برمجة","صمم"],reply:"لتصميم كود احترافي: اكتب صمم لي كود احترافي وسأجيب من MDN/DuckDuckGo مع معاينة HTML حية، ليس كنص خام."},
+  {roots:["شكرا","thanks"],reply:"العفو! أنا Gemalot جاهز دائماً. جرب سؤال جديد."}
 ];
 async function processMessage(text){
   if(!text)text=userInput.value.trim();if(!text)return;
@@ -443,10 +679,12 @@ async function processMessage(text){
   }
   const last=chatContainer.lastChild;if(last&&last.textContent===t.searching)last.remove();
   if(result){
-    appendMessage(result,"ai",true,resultSource||"Eisen.translastor");
+    appendMessage(result,"ai",true,resultSource||"Gemalot");
     if(lastVoiceInput){speakText(result);lastVoiceInput=false;}
   } else {
-    appendMessage(t.noAnswer,"ai",true,"لا يوجد");
+    // Fallback نهائي مضمون
+    let fallback = "أهلاً! أنا Gemalot، مساعد Alislamiah AI.\n\nسؤالك: \"" + text + "\"\n\nتم استقبال رسالتك. إذا لم يظهر جواب من Gemini أو Wikipedia، فالسبب غالباً المفتاح أو الشبكة.\n\nجرب: اكتب سؤال برمجة مثل \"صمم لي كود\" أو اختر مصدر من +.";
+    appendMessage(fallback,"ai",true,"Gemalot Fallback - يعمل دائماً");
   }
 }
 function sendSuggestion(txt){processMessage(txt);}
