@@ -137,27 +137,32 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
   </div>
   <div style="display:flex;align-items:center;gap:6px">
     <div class="header-title" style="font-size:14px">Gemalot</div>
-    <button class="model-pill" onclick="toggleModelDropdown()" id="currentModelBtn" style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.32);border:none;border-radius:22px;padding:8px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">▼ Gemalot Normal</button>
+    <button class="model-pill" onclick="toggleModelDropdown(event)" id="currentModelBtn" style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.32);border:none;border-radius:22px;padding:8px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Gemalot Normal ▼</button>
   </div>
 </div>
 
 <!-- Dropdown مطابق للصورة -->
 <div class="model-dropdown" id="modelDropdown" style="position:fixed;top:62px;right:8px;left:8px;max-width:420px;margin:0 auto;background:#fff;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.45);padding:8px;display:none;z-index:5000;color:#111;max-height:82vh;overflow-y:auto">
-  <div class="model-opt active" data-model="normal" onclick="selectModelFromDropdown('normal', event)" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
-    <div style="flex:1;text-align:right"><div style="font-weight:800;font-size:16px;color:#111">Gemalot Normal</div><div style="font-size:12px;color:#6b7280;margin-top:4px">200 رسالة - بدون Gemini - الوضع العادي</div></div>
-    <div class="model-check" style="margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold">✓</div>
+  <div class="model-opt active" data-model="normal" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
+    <div class="model-check" style="width:28px;height:28px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0">✓</div>
+    <div style="flex:1;text-align:right;margin-right:10px"><div style="font-weight:800;font-size:16px;color:#111">Gemalot Normal</div><div style="font-size:12px;color:#6b7280;margin-top:4px">200 رسالة - بدون Gemini - الوضع العادي</div></div>
   </div>
-  <div class="model-opt" data-model="pro" onclick="selectModelFromDropdown('pro', event)" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
-    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro</div><div style="font-size:12px;color:#6b7280;margin-top:4px">15 رسالة - الوضع العادي - Gemini</div></div>
+  <div class="model-opt" data-model="pro" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
+    <div class="model-check" style="width:28px;height:28px;border-radius:50%;background:transparent;color:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0;border:2px solid #e5e7eb">✓</div>
+    <div style="flex:1;text-align:right;margin-right:10px"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro</div><div style="font-size:12px;color:#6b7280;margin-top:4px">15 رسالة - الوضع العادي - Gemini</div></div>
+  </div>
+  <div class="model-opt" data-model="alislamiah" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
+    <div class="model-check" style="width:28px;height:28px;border-radius:50%;background:transparent;color:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0;border:2px solid #e5e7eb">✓</div>
+    <div style="flex:1;text-align:right;margin-right:10px"><div style="font-weight:700;font-size:15px;color:#111">Alislamiah AI</div><div style="font-size:12px;color:#6b7280;margin-top:4px">ردود من Alislamiah-AI + Gemini - بدون أدوات</div></div>
   </div>
   <div style="height:1px;background:#e5e7eb;margin:12px 8px"></div>
-  <div class="model-opt" onclick="location.href='subscription.html'" style="padding:16px 14px;border-radius:16px;cursor:pointer">
+  <div class="model-opt" data-model="locked" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:0.85">
     <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Plus 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">25 رسالة + مصادر أكثر + Gemini - اشتراك</div></div>
   </div>
-  <div class="model-opt" onclick="location.href='subscription.html'" style="padding:16px 14px;border-radius:16px;cursor:pointer">
+  <div class="model-opt" data-model="locked" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:0.85">
     <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Gold 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">35 رسالة + فاكثر + Gemini - اشتراك</div></div>
   </div>
-  <div class="model-opt" onclick="location.href='subscription.html'" style="padding:16px 14px;border-radius:16px;cursor:pointer">
+  <div class="model-opt" data-model="locked" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:0.85">
     <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Extra 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">50 رسالة + حزمة كاملة + Gemini - اشتراك</div></div>
   </div>
 </div>
@@ -208,7 +213,38 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 <div id="editModal" class="edit-modal"><div class="edit-box"><h3 style="color:#facc15;font-size:14px">محرر احترافي</h3><canvas id="editCanvas"></canvas><div class="edit-tools"><button onclick="applyFilter('grayscale')">أبيض وأسود</button><button onclick="applyFilter('sepia')">Sepia</button><button onclick="applyFilter('invert')">عكسي</button><button onclick="applyFilter('bright')">تفتيح</button><button onclick="rotateCanvas(90)">دوران</button><button onclick="addTextOverlay()">نص</button><button onclick="downloadCanvas()">تحميل</button><button onclick="closeEditor()">إغلاق</button></div></div></div>
 
 <script>
-const planLimits={normal:200, pro:15, pro_plus:25, pro_gold:35, pro_extra:50};
+const planLimits={normal:200, pro:15, alislamiah:100, pro_plus:25, pro_gold:35, pro_extra:50};
+// ===== Alislamiah AI / Gemini =====
+const GEMINI_API_KEY = "AQ.Ab8RN6IeFUlFbso5M8ry5FbzGnSBCf0w2wcSnHK6wZZuNIRJ6Q";
+const GEMINI_MODELS = ["gemini-2.5-flash","gemini-3.8-flash","gemini-3.0-flash","gemini-2.5-pro","gemini-flash-latest","gemini-1.5-flash","gemini-pro"];
+async function askAlislamiahGemini(userText){
+  const systemPrompt = "أنت مساعد ذكي إسلامي اسمك Alislamiah-AI تابع لشبكة الإسلامية. أجب بالعربية الفصحى بوضوح. إذا كان السؤال شرعياً فاعتمد على الكتاب والسنة. كن مهذباً ومفيداً.";
+  const body = {
+    contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nسؤال المستخدم: " + userText }] }],
+    generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+  };
+  let lastError = null;
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = new Error(model + " " + res.status + ": " + errText.slice(0, 120));
+        if (res.status === 404) continue;
+        continue;
+      }
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text.trim();
+    } catch (e) { lastError = e; continue; }
+  }
+  throw lastError || new Error("تعذر الاتصال بـ Alislamiah AI");
+}
+function getCurrentModel(){
+  try { return localStorage.getItem('gemalot_current_model') || 'normal'; } catch(e){ return 'normal'; }
+}
+
 const translations={
   ar:{dir:"rtl",welcome:"كيف يمكنني مساعدتك؟",placeholder:"اسأل Gemalot",newChat:"+ محادثة جديدة",prevChats:"المحادثات السابقة",suggestions:["أنشئ صورة: مسجد مستقبلي","أنشئ فيديو: محيط","حل المعادلة: 2x+3=11","نواقض الوضوء","أحكام الصيام"],noAnswer:"عذراً، لم أجد إجابة دقيقة.",searching:"جاري البحث...",blockedTitle:"انتهت رسائلك",remaining:"متبقي: {n}/{t} اليوم"},
   fr:{dir:"ltr",welcome:"Comment puis-je vous aider ?",placeholder:"Ask Gemalot",newChat:"+ Nouveau chat",prevChats:"Conversations",suggestions:["générer image: mosquée","résoudre: 2x+3=11"],noAnswer:"Désolé, pas de réponse exacte.",searching:"Recherche...",blockedTitle:"Limite atteinte",remaining:"Restant: {n}/{t}"},
@@ -249,50 +285,89 @@ function newChat(){currentChatId=Date.now().toString();messages=[];const cc=docu
 function loadChat(id){const chat=getChats().find(c=>c.id===id);if(!chat)return;currentChatId=id;messages=chat.messages||[];const cc=document.getElementById("chatContainer");if(!cc)return;cc.innerHTML="";messages.forEach(m=>appendMessage(m.text,m.sender,false,m.source,m.html));const sb=document.getElementById("sidebar");if(sb)sb.classList.remove("open");}
 function saveCurrentChat(){if(!messages.length)return;const chats=getChats();const title=messages[0]?.text?.slice(0,30)||"محادثة";const data={id:currentChatId||Date.now().toString(),title,messages,updated:Date.now()};const i=chats.findIndex(c=>c.id===currentChatId);if(i>-1)chats[i]=data;else chats.unshift(data);saveChats(chats);renderChatList();}
 
-function toggleModelDropdown(){
-  var d=document.getElementById('modelDropdown');
-  if(!d) return;
-  d.style.display = d.style.display==='block'?'none':'block';
-}
-function selectModelFromDropdown(model, ev){
-  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
-  if(model !== 'normal' && model !== 'pro') return;
-  localStorage.setItem('gemalot_current_model', model);
-  var dd = document.getElementById('modelDropdown');
-  if(dd) dd.style.display = 'none';
-  // Update button text
+function applyModelUI(model){
   var btn = document.getElementById('currentModelBtn');
   if(btn){
-    btn.textContent = (model === 'normal') ? '▼ Gemalot Normal' : '▼ Gemalot Pro';
+    if(model === 'pro') btn.textContent = 'Gemalot Pro ▼';
+    else if(model === 'alislamiah') btn.textContent = 'Alislamiah AI ▼';
+    else btn.textContent = 'Gemalot Normal ▼';
   }
-  // Clear all options visual state
-  document.querySelectorAll('.model-opt[data-model]').forEach(function(opt){
-    opt.classList.remove('active');
-    opt.style.background = '';
-    // remove any existing check marks
-    opt.querySelectorAll('.model-check').forEach(function(c){ c.remove(); });
+  document.querySelectorAll('.model-opt[data-model="normal"], .model-opt[data-model="pro"], .model-opt[data-model="alislamiah"]').forEach(function(opt){
+    var isSelected = (opt.getAttribute('data-model') === model);
+    opt.classList.toggle('active', isSelected);
+    opt.style.background = isSelected ? '#fef9c3' : '';
+    var check = opt.querySelector('.model-check');
+    if(check){
+      if(isSelected){
+        check.style.background = '#22c55e';
+        check.style.color = '#fff';
+        check.style.border = 'none';
+      } else {
+        check.style.background = 'transparent';
+        check.style.color = 'transparent';
+        check.style.border = '2px solid #e5e7eb';
+      }
+    }
   });
-  // Activate selected
-  var selected = document.querySelector('.model-opt[data-model="'+model+'"]');
-  if(selected){
-    selected.classList.add('active');
-    selected.style.background = '#fef9c3';
-    var checkDiv = document.createElement('div');
-    checkDiv.className = 'model-check';
-    checkDiv.style.cssText = 'margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold';
-    checkDiv.textContent = '✓';
-    selected.appendChild(checkDiv);
+  try { localStorage.setItem('gemalot_current_model', model); } catch(e){}
+  // عند اختيار Alislamiah AI: إخفاء الأدوات والاقتراحات
+  var tools = document.getElementById('toolsPopup');
+  var sug = document.getElementById('suggestionsBar');
+  var plus = document.getElementById('plusBtn');
+  if(model === 'alislamiah'){
+    if(tools) tools.classList.remove('open');
+    if(sug) sug.style.display = 'none';
+    if(plus){ plus.style.opacity = '0.4'; plus.style.pointerEvents = 'none'; }
+  } else {
+    if(sug) sug.style.display = '';
+    if(plus){ plus.style.opacity = '1'; plus.style.pointerEvents = ''; }
   }
   updateLimitUI();
 }
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e){
+
+function selectModelFromDropdown(model){
+  if(model !== 'normal' && model !== 'pro' && model !== 'alislamiah') return;
+  applyModelUI(model);
+  var dd = document.getElementById('modelDropdown');
+  if(dd) dd.style.display = 'none';
+}
+
+function toggleModelDropdown(ev){
+  if(ev){ ev.stopPropagation(); }
   var dd = document.getElementById('modelDropdown');
   if(!dd) return;
-  if(dd.style.display === 'none' || dd.style.display === '') return;
-  if(e.target.closest('#modelDropdown') || e.target.closest('#currentModelBtn')) return;
-  dd.style.display = 'none';
-});
+  if(dd.style.display === 'block'){
+    dd.style.display = 'none';
+  } else {
+    dd.style.display = 'block';
+  }
+}
+
+// Event delegation for model options - works better on mobile
+document.addEventListener('click', function(e){
+  var dd = document.getElementById('modelDropdown');
+  // Handle option click
+  var opt = e.target.closest('.model-opt');
+  if(opt && dd && dd.contains(opt)){
+    e.stopPropagation();
+    e.preventDefault();
+    var model = opt.getAttribute('data-model');
+    if(model === 'normal' || model === 'pro' || model === 'alislamiah'){
+      selectModelFromDropdown(model);
+    } else if(model === 'locked'){
+      // go to subscription
+      try { location.href = 'subscription.html'; } catch(err){}
+    }
+    return;
+  }
+  // Close dropdown when clicking outside
+  if(dd && dd.style.display === 'block'){
+    if(!e.target.closest('#modelDropdown') && !e.target.closest('#currentModelBtn')){
+      dd.style.display = 'none';
+    }
+  }
+}, true); // use capture for reliability
+
 
 function toggleSidebar(){const sb=document.getElementById("sidebar");if(sb)sb.classList.toggle("open");}
 function updateLimitUI(){checkAndResetDaily();const counter=document.getElementById("msgCounter");const subStatus=document.getElementById("subStatus");const limitInfo=document.getElementById("limitInfo");if(!counter)return;const lim=getDailyLimit();const count=parseInt(localStorage.getItem("gemalot_daily_count")||"0");const remaining=Math.max(0,lim-count);counter.textContent=`${remaining}/${lim}`;if(limitInfo)limitInfo.textContent=`متبقي: ${remaining}/${lim} اليوم - بدون سيرفر + Eisen.translastor`;if(subStatus)subStatus.textContent=`الوضع: عادي (${remaining}/${lim})`;}
@@ -556,6 +631,47 @@ async function processMessage(text){
   triggerFullGlow();
   const replyLang=detectLang(text);
   const lower=text.toLowerCase();
+  const currentModel = getCurrentModel();
+
+  // ===== وضع Alislamiah AI: ردود من القاعدة المحلية + Gemini فقط =====
+  if(currentModel === 'alislamiah'){
+    appendMessage(text,"user");
+    userInput.value="";
+    incrementCount();
+    updateLimitUI();
+    updateSendIcon();
+    // بحث محلي أولاً
+    let localReply = null;
+    for(const item of chatKnowledge){
+      for(const root of item.roots){
+        if(lower.includes(root.toLowerCase()) || root.toLowerCase().includes(lower.trim())){
+          localReply = item.reply;
+          break;
+        }
+      }
+      if(localReply) break;
+    }
+    if(localReply){
+      appendMessage(localReply,"ai",true,"Alislamiah AI - قاعدة محلية");
+      if(lastVoiceInput){speakText(localReply);lastVoiceInput=false;}
+      return;
+    }
+    // وإلا Gemini
+    appendMessage("جاري الاتصال بـ Alislamiah AI...","ai",false);
+    try{
+      const reply = await askAlislamiahGemini(text);
+      const last=chatContainer.lastChild;
+      if(last && last.textContent && last.textContent.includes("جاري الاتصال")) last.remove();
+      appendMessage(reply,"ai",true,"Alislamiah AI + Gemini");
+      if(lastVoiceInput){speakText(reply);lastVoiceInput=false;}
+    }catch(err){
+      const last=chatContainer.lastChild;
+      if(last && last.textContent && last.textContent.includes("جاري الاتصال")) last.remove();
+      appendMessage("تعذر الاتصال بـ Alislamiah AI حالياً.\n"+(err.message||""),"ai",true,"خطأ");
+    }
+    return;
+  }
+
   if(lower.startsWith("صورة:")||lower.startsWith("image:")){let p=text.replace(/صورة:|image:/i,"").trim();appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();const url=generateImagePollinations(p||"mosque");appendMessage("", "ai", true, "Pollinations AI", `<div>🎨 ${p}</div><img src="${url}" style="width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`);return;}
   if(lower.startsWith("فيديو:")||lower.startsWith("video:")){let p=text.replace(/فيديو:|video:/i,"").trim();appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage("🎬 جاري إنشاء الفيديو...","ai",false);const vurl=await generateVideoCanvas(p||"ocean");const html=`<div>🎬 ${p}</div><video src="${vurl}" controls style="width:100%;border-radius:12px;margin-top:8px"></video>`;appendMessage("", "ai", true, "Canvas Video", html);return;}
   if(lower.includes("حل")||text.match(/[0-9x+\-*/^=]/)){const mr=solveMathPro(text);if(mr){appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage(mr,"ai",true,"Math.js");return;}}
@@ -644,10 +760,10 @@ if(sendBtn)sendBtn.addEventListener("click",()=>processMessage());
 applyLanguage(currentLang);renderChatList();updateLimitUI();renderSuggestions();updatePlaceholder();updateSendIcon();setInterval(updateLimitUI,60000);
 // Restore selected model from localStorage
 (function restoreModel(){
-  var saved = localStorage.getItem('gemalot_current_model') || 'normal';
-  if(saved !== 'normal' && saved !== 'pro') saved = 'normal';
-  // slight delay so DOM is fully ready
-  setTimeout(function(){ selectModelFromDropdown(saved); }, 50);
+  var saved = 'normal';
+  try { saved = localStorage.getItem('gemalot_current_model') || 'normal'; } catch(e){}
+  if(saved !== 'normal' && saved !== 'pro' && saved !== 'alislamiah') saved = 'normal';
+  setTimeout(function(){ applyModelUI(saved); }, 100);
 })();
 let currentImage=null;const editModal=document.getElementById("editModal");const editCanvas=document.getElementById("editCanvas");const ctx=editCanvas?editCanvas.getContext("2d"):null;
 function openEditor(src){if(!editModal||!editCanvas)return;editModal.style.display="flex";currentImage=new Image();currentImage.crossOrigin="anonymous";currentImage.onload=()=>{editCanvas.width=currentImage.width;editCanvas.height=currentImage.height;ctx.drawImage(currentImage,0,0);};currentImage.src=src;}
