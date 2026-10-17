@@ -143,11 +143,11 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 
 <!-- Dropdown مطابق للصورة -->
 <div class="model-dropdown" id="modelDropdown" style="position:fixed;top:62px;right:8px;left:8px;max-width:420px;margin:0 auto;background:#fff;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.45);padding:8px;display:none;z-index:5000;color:#111;max-height:82vh;overflow-y:auto">
-  <div class="model-opt active" data-model="normal" onclick="selectModelFromDropdown('normal')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
+  <div class="model-opt active" data-model="normal" onclick="selectModelFromDropdown('normal', event)" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
     <div style="flex:1;text-align:right"><div style="font-weight:800;font-size:16px;color:#111">Gemalot Normal</div><div style="font-size:12px;color:#6b7280;margin-top:4px">200 رسالة - بدون Gemini - الوضع العادي</div></div>
-    <div style="margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold">✓</div>
+    <div class="model-check" style="margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold">✓</div>
   </div>
-  <div class="model-opt" data-model="pro" onclick="selectModelFromDropdown('pro')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
+  <div class="model-opt" data-model="pro" onclick="selectModelFromDropdown('pro', event)" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
     <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro</div><div style="font-size:12px;color:#6b7280;margin-top:4px">15 رسالة - الوضع العادي - Gemini</div></div>
   </div>
   <div style="height:1px;background:#e5e7eb;margin:12px 8px"></div>
@@ -223,7 +223,15 @@ function detectLang(text){
 }
 function parseCurrentUser(){const raw=localStorage.getItem("alislamiah_current_user")||"";if(!raw)return {raw:"",name:"",email:"",id:""};try{const j=JSON.parse(raw);if(j&&typeof j==="object")return {raw,name:j.name||j.username||"",email:j.email||"",id:String(j.id||"")};}catch{}return {raw,name:raw,email:"",id:""};}
 function getSubscription(){const all=JSON.parse(localStorage.getItem("gemalot_all_subscriptions")||"{}");const cu=parseCurrentUser();if(all[cu.raw])return all[cu.raw];if(cu.name&&all[cu.name])return all[cu.name];if(cu.email&&all[cu.email])return all[cu.email];return null;}
-function getDailyLimit(){const sub=getSubscription();if(sub&&sub.dailyLimit)return parseInt(sub.dailyLimit);if(sub&&sub.plan&&planLimits[sub.plan])return planLimits[sub.plan];return planLimits.normal;}
+function getDailyLimit(){
+  const sub=getSubscription();
+  if(sub&&sub.dailyLimit)return parseInt(sub.dailyLimit);
+  if(sub&&sub.plan&&planLimits[sub.plan])return planLimits[sub.plan];
+  // Use currently selected model
+  const currentModel = localStorage.getItem('gemalot_current_model') || 'normal';
+  if(planLimits[currentModel]) return planLimits[currentModel];
+  return planLimits.normal;
+}
 function isSubscribed(){const sub=getSubscription();if(sub&&sub.expiry){if(Date.now()<parseInt(sub.expiry))return true;}return localStorage.getItem("gemalot_subscription_active")==="true";}
 function getTodayStr(){return new Date().toISOString().split('T')[0];}
 function checkAndResetDaily(){const d=localStorage.getItem("gemalot_daily_date");const today=getTodayStr();if(d!==today){localStorage.setItem("gemalot_daily_date",today);localStorage.setItem("gemalot_daily_count","0");}}
@@ -246,19 +254,44 @@ function toggleModelDropdown(){
   if(!d) return;
   d.style.display = d.style.display==='block'?'none':'block';
 }
-function selectModelFromDropdown(model){
+function selectModelFromDropdown(model, ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  if(model !== 'normal' && model !== 'pro') return;
   localStorage.setItem('gemalot_current_model', model);
-  var dd=document.getElementById('modelDropdown');
-  if(dd) dd.style.display='none';
-  var btn=document.getElementById('currentModelBtn');
-  if(btn) btn.textContent = '▼ ' + (model==='normal'?'Gemalot Normal':'Gemalot Pro');
-}
-document.addEventListener('click', function(e){
-  var dd=document.getElementById('modelDropdown');
-  var pill=document.getElementById('currentModelBtn');
-  if(dd && pill && !e.target.closest('#modelDropdown') && !e.target.closest('#currentModelBtn')){
-    dd.style.display='none';
+  var dd = document.getElementById('modelDropdown');
+  if(dd) dd.style.display = 'none';
+  // Update button text
+  var btn = document.getElementById('currentModelBtn');
+  if(btn){
+    btn.textContent = (model === 'normal') ? '▼ Gemalot Normal' : '▼ Gemalot Pro';
   }
+  // Clear all options visual state
+  document.querySelectorAll('.model-opt[data-model]').forEach(function(opt){
+    opt.classList.remove('active');
+    opt.style.background = '';
+    // remove any existing check marks
+    opt.querySelectorAll('.model-check').forEach(function(c){ c.remove(); });
+  });
+  // Activate selected
+  var selected = document.querySelector('.model-opt[data-model="'+model+'"]');
+  if(selected){
+    selected.classList.add('active');
+    selected.style.background = '#fef9c3';
+    var checkDiv = document.createElement('div');
+    checkDiv.className = 'model-check';
+    checkDiv.style.cssText = 'margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold';
+    checkDiv.textContent = '✓';
+    selected.appendChild(checkDiv);
+  }
+  updateLimitUI();
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e){
+  var dd = document.getElementById('modelDropdown');
+  if(!dd) return;
+  if(dd.style.display === 'none' || dd.style.display === '') return;
+  if(e.target.closest('#modelDropdown') || e.target.closest('#currentModelBtn')) return;
+  dd.style.display = 'none';
 });
 
 function toggleSidebar(){const sb=document.getElementById("sidebar");if(sb)sb.classList.toggle("open");}
@@ -609,6 +642,13 @@ if(userInput){
 if(sendBtn)sendBtn.addEventListener("click",()=>processMessage());
 
 applyLanguage(currentLang);renderChatList();updateLimitUI();renderSuggestions();updatePlaceholder();updateSendIcon();setInterval(updateLimitUI,60000);
+// Restore selected model from localStorage
+(function restoreModel(){
+  var saved = localStorage.getItem('gemalot_current_model') || 'normal';
+  if(saved !== 'normal' && saved !== 'pro') saved = 'normal';
+  // slight delay so DOM is fully ready
+  setTimeout(function(){ selectModelFromDropdown(saved); }, 50);
+})();
 let currentImage=null;const editModal=document.getElementById("editModal");const editCanvas=document.getElementById("editCanvas");const ctx=editCanvas?editCanvas.getContext("2d"):null;
 function openEditor(src){if(!editModal||!editCanvas)return;editModal.style.display="flex";currentImage=new Image();currentImage.crossOrigin="anonymous";currentImage.onload=()=>{editCanvas.width=currentImage.width;editCanvas.height=currentImage.height;ctx.drawImage(currentImage,0,0);};currentImage.src=src;}
 function closeEditor(){if(editModal)editModal.style.display="none";}
