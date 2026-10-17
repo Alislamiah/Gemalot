@@ -193,6 +193,7 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 <div class="tools-popup" id="toolsPopup">
   <button onclick="triggerUpload('image');closeTools()"><span>🖼️</span> رفع صورة وتعديلها</button>
   <button onclick="triggerUpload('video');closeTools()"><span>🎥</span> رفع فيديو</button>
+  <button onclick="triggerUpload('file');closeTools()"><span>📎</span> رفع ملف</button>
   <button onclick="askImageGen();closeTools()"><span>🎨</span> إنشاء صورة 4K</button>
   <button onclick="askVideoGen();closeTools()"><span>🎬</span> إنشاء فيديو</button>
   <button onclick="insertPrompt('حل المعادلة: ');closeTools()"><span>🧮</span> حل معادلة</button>
@@ -208,7 +209,7 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
   </div>
 </div>
 
-<input type="file" id="fileInput" hidden accept="image/*,video/*">
+<input type="file" id="fileInput" hidden accept="image/*,video/*,.pdf,.doc,.docx,.txt,.zip,.rar,audio/*">
 <div id="fullGlow" class="full-glow"></div>
 <div id="editModal" class="edit-modal"><div class="edit-box"><h3 style="color:#facc15;font-size:14px">محرر احترافي</h3><canvas id="editCanvas"></canvas><div class="edit-tools"><button onclick="applyFilter('grayscale')">أبيض وأسود</button><button onclick="applyFilter('sepia')">Sepia</button><button onclick="applyFilter('invert')">عكسي</button><button onclick="applyFilter('bright')">تفتيح</button><button onclick="rotateCanvas(90)">دوران</button><button onclick="addTextOverlay()">نص</button><button onclick="downloadCanvas()">تحميل</button><button onclick="closeEditor()">إغلاق</button></div></div></div>
 
@@ -310,18 +311,11 @@ function applyModelUI(model){
     }
   });
   try { localStorage.setItem('gemalot_current_model', model); } catch(e){}
-  // عند اختيار Alislamiah AI: إخفاء الأدوات والاقتراحات
-  var tools = document.getElementById('toolsPopup');
+  // Alislamiah AI: يبقى رفع الصور/الفيديو/الملفات والصوت مفعّلاً
   var sug = document.getElementById('suggestionsBar');
   var plus = document.getElementById('plusBtn');
-  if(model === 'alislamiah'){
-    if(tools) tools.classList.remove('open');
-    if(sug) sug.style.display = 'none';
-    if(plus){ plus.style.opacity = '0.4'; plus.style.pointerEvents = 'none'; }
-  } else {
-    if(sug) sug.style.display = '';
-    if(plus){ plus.style.opacity = '1'; plus.style.pointerEvents = ''; }
-  }
+  if(sug) sug.style.display = '';
+  if(plus){ plus.style.opacity = '1'; plus.style.pointerEvents = ''; }
   updateLimitUI();
 }
 
@@ -383,23 +377,41 @@ function appendMessage(text,sender,save=true,source,htmlContent){
   chatContainer.appendChild(div);window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
   if(save&&sender!=="blocked"){messages.push({text,sender,source,html:htmlContent||null});if(!currentChatId)currentChatId=Date.now().toString();saveCurrentChat();}
 }
-function triggerUpload(type){if(!fileInput)return;fileInput.setAttribute("data-type",type);fileInput.accept=type==="image"?"image/*":"video/*";fileInput.click();}
+function triggerUpload(type){
+  if(!fileInput)return;
+  fileInput.setAttribute("data-type",type);
+  if(type==="image") fileInput.accept="image/*";
+  else if(type==="video") fileInput.accept="video/*";
+  else if(type==="file") fileInput.accept=".pdf,.doc,.docx,.txt,.zip,.rar,audio/*,*/*";
+  else fileInput.accept="image/*,video/*,*/*";
+  fileInput.click();
+}
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
 if(fileInput)fileInput.addEventListener("change", async (e)=>{
   const file=e.target.files[0];if(!file)return;
-  if(file.size>8*1024*1024){alert('الملف كبير');e.target.value='';return;}
+  if(file.size>12*1024*1024){alert('الملف كبير جداً (الحد 12MB)');e.target.value='';return;}
   try{
     const base64=await fileToBase64(file);
-    if(file.type.startsWith("image/")){
+    const dtype = fileInput.getAttribute("data-type") || "";
+    if(file.type.startsWith("image/") || dtype==="image"){
       const html=`<div>🖼️ ${file.name}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
       appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الصورة!","ai",true,"محلي");
-    }else{
+      appendMessage("✅ تم رفع الصورة! يمكنك طلب تعديلها أو وصفها.","ai",true,"Alislamiah AI");
+    }else if(file.type.startsWith("video/") || dtype==="video"){
       const html=`<div>🎥 ${file.name}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
       appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الفيديو!","ai",true,"محلي");
+      appendMessage("✅ تم رفع الفيديو!","ai",true,"Alislamiah AI");
+    }else if(file.type.startsWith("audio/")){
+      const html=`<div>🎵 ${file.name}</div><audio src="${base64}" controls style="width:100%;margin-top:8px"></audio>`;
+      appendMessage(file.name,"user",true,null,html);
+      appendMessage("✅ تم رفع الملف الصوتي!","ai",true,"Alislamiah AI");
+    }else{
+      const sizeKB = Math.round(file.size/1024);
+      const html=`<div>📎 ${file.name}</div><div style="font-size:12px;color:#6b7280;margin-top:4px">نوع: ${file.type||"ملف"} — الحجم: ${sizeKB} KB</div>`;
+      appendMessage(file.name,"user",true,null,html);
+      appendMessage("✅ تم رفع الملف: "+file.name,"ai",true,"Alislamiah AI");
     }
-  }catch{alert('خطأ في الرفع');}
+  }catch(err){alert('خطأ في الرفع: '+(err.message||''));}
   e.target.value='';
 });
 async function askTranslate(){const p=prompt("النص للترجمة (Eisen.translastor):");if(p){const to=prompt("إلى أي لغة؟ ar/en/fr/es (افتراضي: en)","en")||"en";const res=await fetchFromEisen(p,to);if(res){appendMessage(p,"user");appendMessage(res.text,"ai",true,res.source);}else{alert("تعذر جلب الترجمة من Eisen");}}}
@@ -633,8 +645,26 @@ async function processMessage(text){
   const lower=text.toLowerCase();
   const currentModel = getCurrentModel();
 
-  // ===== وضع Alislamiah AI: ردود من القاعدة المحلية + Gemini فقط =====
+  // ===== وضع Alislamiah AI: ردود من القاعدة + Gemini + دعم وسائط وصوت =====
   if(currentModel === 'alislamiah'){
+    // دعم أوامر الصور والفيديو كما في الوضع العادي
+    if(lower.startsWith("صورة:")||lower.startsWith("image:")){
+      let p=text.replace(/صورة:|image:/i,"").trim();
+      appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
+      const url=generateImagePollinations(p||"mosque");
+      appendMessage("","ai",true,"Alislamiah AI - صورة",`<div>🎨 ${p}</div><img src="${url}" style="width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`);
+      return;
+    }
+    if(lower.startsWith("فيديو:")||lower.startsWith("video:")){
+      let p=text.replace(/فيديو:|video:/i,"").trim();
+      appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
+      appendMessage("🎬 جاري إنشاء الفيديو...","ai",false);
+      const vurl=await generateVideoCanvas(p||"ocean");
+      const html=`<div>🎬 ${p}</div><video src="${vurl}" controls style="width:100%;border-radius:12px;margin-top:8px"></video>`;
+      const last=chatContainer.lastChild;if(last&&last.textContent&&last.textContent.includes("جاري إنشاء"))last.remove();
+      appendMessage("","ai",true,"Alislamiah AI - فيديو",html);
+      return;
+    }
     appendMessage(text,"user");
     userInput.value="";
     incrementCount();
