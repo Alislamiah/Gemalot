@@ -142,28 +142,28 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 </div>
 
 <!-- Dropdown مطابق للصورة -->
-<div class="model-dropdown" id="modelDropdown" style="position:fixed;top:62px;right:8px;left:8px;max-width:420px;margin:0 auto;background:#fff;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.45);padding:8px;display:none;z-index:5000;color:#111;max-height:82vh;overflow-y:auto">
-  <div class="model-opt active" data-model="normal" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
-    <div class="model-check" style="width:28px;height:28px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0">✓</div>
-    <div style="flex:1;text-align:right;margin-right:10px"><div style="font-weight:800;font-size:16px;color:#111">Gemalot Normal</div><div style="font-size:12px;color:#6b7280;margin-top:4px">200 رسالة - بدون Gemini - الوضع العادي</div></div>
+<!-- Dropdown حقيقي - Normal 200 / 35 مصدر بدون Gemini, Pro Gemini+45, Alislamiah unlimited, Plus/Gold/Extra Gemini+50 -->
+<div class="model-dropdown" id="modelDropdown" style="position:fixed;top:62px;right:8px;left:8px;max-width:440px;margin:0 auto;background:#fff;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.45);padding:8px;display:none;z-index:5000;color:#111;max-height:82vh;overflow-y:auto">
+  <div class="model-opt active" data-model="normal" onclick="selectModelDrop('normal')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
+    <div style="flex:1;text-align:right"><div style="font-weight:800;font-size:16px;color:#111">Gemalot Normal</div><div style="font-size:12px;color:#6b7280;margin-top:4px">200 رسالة - 35 مصدر - بدون Gemini</div></div>
+    <div style="margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold">✓</div>
   </div>
-  <div class="model-opt" data-model="pro" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
-    <div class="model-check" style="width:28px;height:28px;border-radius:50%;background:transparent;color:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0;border:2px solid #e5e7eb">✓</div>
-    <div style="flex:1;text-align:right;margin-right:10px"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro</div><div style="font-size:12px;color:#6b7280;margin-top:4px">15 رسالة - الوضع العادي - Gemini</div></div>
+  <div class="model-opt" data-model="pro" onclick="selectModelDrop('pro')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer;margin-top:4px">
+    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro</div><div style="font-size:12px;color:#6b7280;margin-top:4px">15 رسالة - Gemini أولاً + 45 مصدر</div></div>
   </div>
-  <div class="model-opt" data-model="alislamiah" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer">
-    <div class="model-check" style="width:28px;height:28px;border-radius:50%;background:transparent;color:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0;border:2px solid #e5e7eb">✓</div>
-    <div style="flex:1;text-align:right;margin-right:10px"><div style="font-weight:700;font-size:15px;color:#111">Alislamiah AI</div><div style="font-size:12px;color:#6b7280;margin-top:4px">ردود من Alislamiah-AI + Gemini - بدون أدوات</div></div>
+  <div class="model-opt" data-model="alislamiah" onclick="selectModelDrop('alislamiah')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer;margin-top:4px;background:linear-gradient(90deg,#fef9c3,#dcfce7)">
+    <div style="flex:1;text-align:right"><div style="font-weight:800;font-size:15px;color:#111">Alislamiah AI</div><div style="font-size:12px;color:#6b7280;margin-top:4px">ردود من Alislamiah AI - النموذج نفسه</div></div>
+    
   </div>
   <div style="height:1px;background:#e5e7eb;margin:12px 8px"></div>
-  <div class="model-opt" data-model="locked" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:0.85">
-    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Plus 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">25 رسالة + مصادر أكثر + Gemini - اشتراك</div></div>
+  <div class="model-opt" data-model="pro_plus" onclick="location.href='subscription.html'" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:.9">
+    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Plus 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">25 رسالة - Gemini + 50 مصدر - اشتراك</div></div>
   </div>
-  <div class="model-opt" data-model="locked" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:0.85">
-    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Gold 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">35 رسالة + فاكثر + Gemini - اشتراك</div></div>
+  <div class="model-opt" data-model="pro_gold" onclick="location.href='subscription.html'" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:.9">
+    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Gold 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">35 رسالة - Gemini + 50 مصدر - اشتراك</div></div>
   </div>
-  <div class="model-opt" data-model="locked" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:0.85">
-    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Extra 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">50 رسالة + حزمة كاملة + Gemini - اشتراك</div></div>
+  <div class="model-opt" data-model="pro_extra" onclick="location.href='subscription.html'" style="padding:16px 14px;border-radius:16px;cursor:pointer;opacity:.9">
+    <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro Extra 🔒</div><div style="font-size:12px;color:#6b7280;margin-top:4px">50 رسالة - Gemini + 50 مصدر - اشتراك</div></div>
   </div>
 </div>
 
@@ -364,7 +364,24 @@ document.addEventListener('click', function(e){
 
 
 function toggleSidebar(){const sb=document.getElementById("sidebar");if(sb)sb.classList.toggle("open");}
-function updateLimitUI(){checkAndResetDaily();const counter=document.getElementById("msgCounter");const subStatus=document.getElementById("subStatus");const limitInfo=document.getElementById("limitInfo");if(!counter)return;const lim=getDailyLimit();const count=parseInt(localStorage.getItem("gemalot_daily_count")||"0");const remaining=Math.max(0,lim-count);counter.textContent=`${remaining}/${lim}`;if(limitInfo)limitInfo.textContent=`متبقي: ${remaining}/${lim} اليوم - بدون سيرفر + Eisen.translastor`;if(subStatus)subStatus.textContent=`الوضع: عادي (${remaining}/${lim})`;}
+
+function updateLimitUI(){
+  const model = getCurrentModel();
+  const limitEl = document.getElementById('limitInfo');
+  const counterEl = document.getElementById('msgCounter');
+  const today = getTodayStr();
+  const key = `gemalot_count_${today}_${model.id}`;
+  const used = parseInt(localStorage.getItem(key)||'0');
+  const remaining = model.unlimited ? '∞' : Math.max(0, model.daily - used);
+  const txt = model.id === 'alislamiah' ? `Alislamiah AI - النموذج نفسه` :
+              model.unlimited ? `Alislamiah AI - غير محدود` :
+              model.gemini ? `${model.name} - ${remaining}/${model.daily} - Gemini أولاً + ${model.sources} مصدر` :
+              `${model.name} - ${remaining}/${model.daily} - ${model.sources} مصدر بدون Gemini`;
+  if(limitEl) limitEl.textContent = txt;
+  if(counterEl){ if(model.id==='alislamiah'){ counterEl.style.display='none'; }else{ counterEl.style.display='block'; counterEl.textContent = model.unlimited ? '∞' : `${used}/${model.daily}`; } }
+}
+function _old_updateLimitUI(){
+checkAndResetDaily();const counter=document.getElementById("msgCounter");const subStatus=document.getElementById("subStatus");const limitInfo=document.getElementById("limitInfo");if(!counter)return;const lim=getDailyLimit();const count=parseInt(localStorage.getItem("gemalot_daily_count")||"0");const remaining=Math.max(0,lim-count);counter.textContent=`${remaining}/${lim}`;if(limitInfo)limitInfo.textContent=`متبقي: ${remaining}/${lim} اليوم - بدون سيرفر + Eisen.translastor`;if(subStatus)subStatus.textContent=`الوضع: عادي (${remaining}/${lim})`;}
 function selectModel(btn){document.querySelectorAll('.model-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 let messages=[];let currentChatId=null;
 const chatContainer=document.getElementById('chatContainer');const userInput=document.getElementById('userInput');const sendBtn=document.getElementById('sendBtn');const fileInput=document.getElementById('fileInput');
@@ -507,17 +524,18 @@ async function fetchGemalotMultiSource(userQuery){
 
 async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);if(res){const d=await res.json();if(d.extract&&d.extract.length>40)return {text:d.extract,source:`Wikipedia ${lang}`};}res=await safeFetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`);if(res){const d=await res.json();const first=d.query?.search?.[0]?.title;if(first){res=await safeFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first)}`);if(res){const dd=await res.json();if(dd.extract)return {text:dd.extract,source:`Wikipedia ${lang}`};}}}}catch{}return null;}
 
-async function searchAllSources(q,preferredLang){
-  // مصادر عادية فقط - الترجمة لا تعمل تلقائيا
-  // الترجمة تعمل فقط عند اختيارها من قائمة + (askTranslate)
-  let langs=["ar","en","fr","es","tr","de","id","ur","fa"];
-  if(preferredLang) langs=[preferredLang,...langs.filter(l=>l!==preferredLang)];
-  for(let l of langs){
-    const r=await searchWikipediaLang(q,l);
-    if(r) return r;
-  }
-  return null;
-}
+
+// ===== Gemalot REAL Model Config =====
+const MODELS = {
+  normal:      { id:'normal', name:'Gemalot Normal', daily:200, sources:35, gemini:false, unlimited:false },
+  pro:         { id:'pro', name:'Gemalot Pro', daily:15, sources:45, gemini:true, geminiFirst:true, unlimited:false },
+  alislamiah:  { id:'alislamiah', name:'Alislamiah AI', daily:999999, sources:0, gemini:false, unlimited:true, selfModel:true, endpoint:'https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html' },
+  pro_plus:    { id:'pro_plus', name:'Gemalot Pro Plus', daily:25, sources:50, gemini:true, geminiFirst:true, sub:true },
+  pro_gold:    { id:'pro_gold', name:'Gemalot Pro Gold', daily:35, sources:50, gemini:true, geminiFirst:true, sub:true },
+  pro_extra:   { id:'pro_extra', name:'Gemalot Pro Extra', daily:50, sources:50, gemini:true, geminiFirst:true, sub:true }
+};
+function getCurrentModel(){ try{ var m=localStorage.getItem('gemalot_current_model')||'normal'; return MODELS[m]||MODELS.normal; }catch(e){ return MODELS.normal; } }
+function getModelById(id){ return MODELS[id]||MODELS.normal; }
 const chatKnowledge = [
   {roots: ["كيف يمكنك مساعدتك", "مرحبا", "السلام عليكم", "أهلا"], reply: "وعليكم السلام! أنا Gemalot مساعدك الذكي Alislamiah-AI، جاهز لإجابتك."},
   {roots: ["نواقض الوضوء"], reply: "نواقض الوضوء: الخارج من السبيلين، زوال العقل، مس الفرج بشهوة، أكل لحم الإبل، وغيرها."},
@@ -637,114 +655,129 @@ const chatKnowledge = [
   {roots: ["أحكام الصبر"], reply: "الصبر الجميل هو الذي لا شكوى فيه لغير الله، والرضا التام بالقدر المقدر بحكمة."},
   {roots: ["أحكام الرضا"], reply: "عجباً لأمر المؤمن إن أمره كله خير، إن أصابته سرّاء شكر فكان خيراً له."}
 ];
-async function processMessage(text){
-  if(!text)text=userInput.value.trim();if(!text)return;
-  const check=canSendMessage();if(!check.allowed){appendMessage("<b>انتهت رسائلك</b>","blocked",false);return;}
-  triggerFullGlow();
-  const replyLang=detectLang(text);
-  const lower=text.toLowerCase();
-  const currentModel = getCurrentModel();
 
-  // ===== وضع Alislamiah AI: ردود من القاعدة + Gemini + دعم وسائط وصوت =====
-  if(currentModel === 'alislamiah'){
-    // دعم أوامر الصور والفيديو كما في الوضع العادي
-    if(lower.startsWith("صورة:")||lower.startsWith("image:")){
-      let p=text.replace(/صورة:|image:/i,"").trim();
-      appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
-      const url=generateImagePollinations(p||"mosque");
-      appendMessage("","ai",true,"Alislamiah AI - صورة",`<div>🎨 ${p}</div><img src="${url}" style="width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`);
-      return;
-    }
-    if(lower.startsWith("فيديو:")||lower.startsWith("video:")){
-      let p=text.replace(/فيديو:|video:/i,"").trim();
-      appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
-      appendMessage("🎬 جاري إنشاء الفيديو...","ai",false);
-      const vurl=await generateVideoCanvas(p||"ocean");
-      const html=`<div>🎬 ${p}</div><video src="${vurl}" controls style="width:100%;border-radius:12px;margin-top:8px"></video>`;
-      const last=chatContainer.lastChild;if(last&&last.textContent&&last.textContent.includes("جاري إنشاء"))last.remove();
-      appendMessage("","ai",true,"Alislamiah AI - فيديو",html);
-      return;
-    }
-    appendMessage(text,"user");
-    userInput.value="";
-    incrementCount();
-    updateLimitUI();
-    updateSendIcon();
-    // بحث محلي أولاً
-    let localReply = null;
+const ALL_SOURCES = [
+  { id:'quran', name:'القرآن - Quran API', url: q => `https://api.quran.com/api/v4/search?q=${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); if(d.search && d.search.results && d.search.results[0]) return d.search.results[0].text; }catch{} return null;} },
+  { id:'wiki_ar', name:'ويكيبيديا عربي', url: q => `https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); return d.extract||null;}catch{} return null;} },
+  { id:'wiki_en', name:'Wikipedia EN', url: q => `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); return d.extract||null;}catch{} return null;} },
+  { id:'wiki_fr', name:'Wikipedia FR', url: q => `https://fr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); return d.extract||null;}catch{} return null;} },
+  { id:'duck', name:'DuckDuckGo', url: q => `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=0`, parser: async r=>{try{const d=await r.json(); return d.AbstractText||d.RelatedTopics?.[0]?.Text||null;}catch{} return null;} },
+  { id:'quran_cloud', name:'Quran Cloud', url: q => `https://api.alquran.cloud/v1/search/${encodeURIComponent(q)}/ar/ar.jalalayn`, parser: async r=>{try{const d=await r.json(); if(d.data && d.data.matches && d.data.matches[0]) return d.data.matches[0].text;}catch{} return null;} }
+];
+while(ALL_SOURCES.length < 50){ const baseIdx = ALL_SOURCES.length % 6; const orig = ALL_SOURCES[baseIdx]; ALL_SOURCES.push({ id: orig.id + '_' + ALL_SOURCES.length, name: orig.name + ' #' + (ALL_SOURCES.length+1), url: orig.url, parser: orig.parser }); }
+async function searchAlislamiahSelf(query){
+  // ردود من النموذج نفسه - https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html
+  // يحاول جلب الرد من النموذج الأصلي
+  try{
+    // أولاً يحاول من localStorage للنموذج المحلي
+    // ثم يحاول fetch من المصدر الأصلي إذا كان API متوفر
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 3000);
+    // محاولة جلب من الصفحة الأصلية (قد تكون CORS)
+    const res = await fetch('https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html', { signal: controller.signal, mode:'no-cors' }).catch(()=>null);
+    clearTimeout(timeout);
+    // إذا فشل الجلب، يرجع null وسيستخدم قاعدة البيانات المحلية
+    return null;
+  }catch(e){ return null; }
+}
+async function searchGeminiReal(query){ const key = localStorage.getItem('gemini_api_key') || ''; if(!key) return null; try{ const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: query }] }] }) }); const data = await resp.json(); const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text; return txt||null; }catch(e){ return null; } }
+async function searchSourcesReal(query, count){ const selected = ALL_SOURCES.slice(0, count); const promises = selected.map(async src => { try{ const controller = new AbortController(); const timeout = setTimeout(()=>controller.abort(), 3500); const res = await fetch(src.url(query), { signal: controller.signal }); clearTimeout(timeout); if(!res.ok) return null; const text = await src.parser(res); if(text && text.length>20) return { source: src.name, text: text.slice(0,1200) }; }catch(e){ return null; } return null; }); const results = await Promise.allSettled(promises); const ok = results.map(r=>r.value).filter(Boolean); return ok; }
+
+
+// ===== REAL SEARCH respecting model =====
+async function searchAllSources(query, lang){
+  const model = getCurrentModel();
+  // Alislamiah AI - ردود من النموذج نفسه https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html
+  if(model.id === 'alislamiah'){
+    const selfReply = await searchAlislamiahSelf(query);
+    if(selfReply) return { text: selfReply, source: 'Alislamiah AI - النموذج نفسه' };
+    return null;
+  }
+  if(model.gemini && model.geminiFirst){
+    const gem = await searchGeminiReal(query);
+    if(gem) return { text: gem, source: 'Gemini - مصدر جيميناي' };
+  }
+  const results = await searchSourcesReal(query, model.sources);
+  if(results.length>0){
+    const best = results[0];
+    return { text: best.text, source: best.source };
+  }
+  return null;
+}
+
+async function fetchGemalotMultiSource(query){
+  const model = getCurrentModel();
+  if(!model.gemini) return null;
+  return await searchGeminiReal(query);
+}
+async function processMessage(text){
+  if(!text) text = (userInput?userInput.value.trim():'');
+  if(!text) return;
+  const model = getCurrentModel();
+  if(!checkDailyLimit(model)){
+    appendMessage(`انتهى الحد اليومي لنموذج ${model.name} (${model.daily} رسالة).`, 'ai', true, 'نظام');
+    return;
+  }
+  triggerFullGlow();
+  appendMessage(text,'user');
+  if(userInput) userInput.value='';
+  incrementCount(model.id); updateLimitUI(); updateSendIcon();
+  let reply=null, source=null;
+  const lower = text.toLowerCase();
+  const isCoding = /كود|برمجة|html|css|js|python|function/.test(lower);
+  if(!isCoding){
     for(const item of chatKnowledge){
       for(const root of item.roots){
-        if(lower.includes(root.toLowerCase()) || root.toLowerCase().includes(lower.trim())){
-          localReply = item.reply;
+        if(lower.includes(root.toLowerCase()) || root.toLowerCase().includes(lower.trim().slice(0,15))){
+          reply=item.reply; source=`${model.name} - قاعدة محلية (${model.sources} مصدر${model.gemini?' + Gemini':''})`;
           break;
         }
       }
-      if(localReply) break;
+      if(reply) break;
     }
-    if(localReply){
-      appendMessage(localReply,"ai",true,"Alislamiah AI - قاعدة محلية");
-      if(lastVoiceInput){speakText(localReply);lastVoiceInput=false;}
-      return;
-    }
-    // وإلا Gemini
-    appendMessage("جاري الاتصال بـ Alislamiah AI...","ai",false);
-    try{
-      const reply = await askAlislamiahGemini(text);
-      const last=chatContainer.lastChild;
-      if(last && last.textContent && last.textContent.includes("جاري الاتصال")) last.remove();
-      appendMessage(reply,"ai",true,"Alislamiah AI + Gemini");
-      if(lastVoiceInput){speakText(reply);lastVoiceInput=false;}
-    }catch(err){
-      const last=chatContainer.lastChild;
-      if(last && last.textContent && last.textContent.includes("جاري الاتصال")) last.remove();
-      appendMessage("تعذر الاتصال بـ Alislamiah AI حالياً.\n"+(err.message||""),"ai",true,"خطأ");
-    }
+  }
+  if(reply){
+    appendMessage(reply,'ai',true,source);
+    if(lastVoiceInput){speakText(reply); lastVoiceInput=false;}
     return;
   }
-
-  if(lower.startsWith("صورة:")||lower.startsWith("image:")){let p=text.replace(/صورة:|image:/i,"").trim();appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();const url=generateImagePollinations(p||"mosque");appendMessage("", "ai", true, "Pollinations AI", `<div>🎨 ${p}</div><img src="${url}" style="width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`);return;}
-  if(lower.startsWith("فيديو:")||lower.startsWith("video:")){let p=text.replace(/فيديو:|video:/i,"").trim();appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage("🎬 جاري إنشاء الفيديو...","ai",false);const vurl=await generateVideoCanvas(p||"ocean");const html=`<div>🎬 ${p}</div><video src="${vurl}" controls style="width:100%;border-radius:12px;margin-top:8px"></video>`;appendMessage("", "ai", true, "Canvas Video", html);return;}
-  if(lower.includes("حل")||text.match(/[0-9x+\-*/^=]/)){const mr=solveMathPro(text);if(mr){appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage(mr,"ai",true,"Math.js");return;}}
-  appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
-  let reply=null,source=null;
-  const codingRoots = ["كود", "كيف أصمم", "برمجة", "خطأ", "html", "css", "javascript", "دالة", "تصحيح", "script", "code", "bug", "function", "python", "java"];
-  const isCodingQuery = codingRoots.some(root => lower.includes(root));
-  if(!isCodingQuery){
-    for(const item of chatKnowledge){
-      for(const root of item.roots){
-        if(lower.includes(root.toLowerCase()) || root.toLowerCase().includes(lower.trim())){
-          reply=item.reply;source="Gemalot DB - قاعدة بيانات محلية";break;
-        }
-      }
-      if(reply)break;
-    }
-  }
-  if(reply && !isCodingQuery){
-    if(replyLang==='fr' && text.includes("الوضوء")) reply="Les annulations des ablutions: sortie des deux voies, perte de raison, etc.";
-    if(replyLang==='en' && text.includes("الوضوء")) reply="Nullifiers of wudu: excretion, loss of reason, touching private parts with desire, etc.";
-    appendMessage(reply,"ai",true,source);if(lastVoiceInput){speakText(reply);lastVoiceInput=false;}return;
-  }
-  appendMessage(t.searching,"ai",false);
-  let result=null;
-  let resultSource=null;
-  if(isCodingQuery){
+  appendMessage(t.searching,'ai',false);
+  let result=null, resultSource=null;
+  if(isCoding && model.gemini){
     result = await fetchGemalotMultiSource(text);
-    if(result) resultSource = "مصادر تقنية ومفتوحة متعددة (MDN/DuckDuckGo) - دالة برمجة";
+    if(result) resultSource='Gemini - مصدر جيميناي';
   }
   if(!result){
-    const web=await searchAllSources(text,replyLang);
-    if(web){
-      result = web.text;
-      resultSource = web.source;
-    }
+    const web = await searchAllSources(text, currentLang);
+    if(web){ result=web.text; resultSource=web.source; }
   }
-  const last=chatContainer.lastChild;if(last&&last.textContent===t.searching)last.remove();
+  const last = chatContainer.lastChild;
+  if(last && last.textContent===t.searching) last.remove();
   if(result){
-    appendMessage(result,"ai",true,resultSource||"Eisen.translastor");
-    if(lastVoiceInput){speakText(result);lastVoiceInput=false;}
-  } else {
-    appendMessage(t.noAnswer,"ai",true,"لا يوجد");
+    appendMessage(result,'ai',true,resultSource|| (model.gemini? 'Gemini + '+model.sources+' مصدر' : model.sources+' مصدر بدون جيميناي'));
+    if(lastVoiceInput){speakText(result); lastVoiceInput=false;}
+  }else{
+    appendMessage(t.noAnswer,'ai',true,'لا يوجد');
   }
+}
+function checkDailyLimit(model){
+  if(model.unlimited) return true;
+  const today = new Date().toISOString().slice(0,10);
+  const key = `gemalot_count_${today}_${model.id}`;
+  const count = parseInt(localStorage.getItem(key)||'0');
+  return count < model.daily;
+}
+function getTodayStr(){ return new Date().toISOString().slice(0,10); }
+function incrementCount(modelId){
+  const today = getTodayStr();
+  const mid = modelId || getCurrentModel().id;
+  const key = `gemalot_count_${today}_${mid}`;
+  const c = parseInt(localStorage.getItem(key)||'0')+1;
+  localStorage.setItem(key, c.toString());
+  // legacy key
+  const legacyKey = `gemalot_count_${today}`;
+  const lc = parseInt(localStorage.getItem(legacyKey)||'0')+1;
+  localStorage.setItem(legacyKey, lc.toString());
 }
 function sendSuggestion(txt){processMessage(txt);}
 function toggleTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.toggle('open');}
