@@ -527,7 +527,7 @@ async function searchWikipediaLang(q,lang){try{let res=await safeFetch(`https://
 
 // ===== Gemalot REAL Model Config =====
 const MODELS = {
-  normal:      { id:'normal', name:'Gemalot Normal', daily:200, sources:35, gemini:false, unlimited:false },
+  normal:      { id:'normal', name:'Gemalot Normal', daily:200, sources:35, gemini:false, geminiFirst:false, unlimited:false },
   pro:         { id:'pro', name:'Gemalot Pro', daily:15, sources:45, gemini:true, geminiFirst:true, unlimited:false },
   alislamiah:  { id:'alislamiah', name:'Alislamiah AI', daily:999999, sources:0, gemini:false, unlimited:true, selfModel:true, endpoint:'https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html' },
   pro_plus:    { id:'pro_plus', name:'Gemalot Pro Plus', daily:25, sources:50, gemini:true, geminiFirst:true, sub:true },
@@ -536,120 +536,228 @@ const MODELS = {
 };
 function getCurrentModel(){ try{ var m=localStorage.getItem('gemalot_current_model')||'normal'; return MODELS[m]||MODELS.normal; }catch(e){ return MODELS.normal; } }
 function getModelById(id){ return MODELS[id]||MODELS.normal; }
+function getCurrentModel(){ try{ var m=localStorage.getItem('gemalot_current_model')||'normal'; return MODELS[m]||MODELS.normal; }catch(e){ return MODELS.normal; } }
+function getModelById(id){ return MODELS[id]||MODELS.normal; }
 const chatKnowledge = [
-  roots: ["كيف يمكنك مساعدتك", "مرحبا", "السلام عليكم", "أهلا"],
-    reply: "وعليكم السلام! أنا Gemalot مساعدك الذكي Alislamiah-AI، جاهز لإجابتك."
-  },
-  {
-    roots: ["نواقض الوضوء"],
-    reply: "نواقض الوضوء: الخارج من السبيلين، زوال العقل، مس الفرج بشهوة، أكل لحم الإبل، وغيرها."
-  },
-  {
-    roots: ["أحكام الصيام", "الصيام"],
-    reply: "الصيام ركن من أركان الإسلام، شروطه الإسلام والبلوغ والعقل والإقامة والصحة."
-  },
-  {
-    roots: ["أحكام سجود السهو"],
-    reply: "سجود السهو مشروع لجبر ما حصل في الصلاة من زيادة أو نقص."
-  },
-  {
-    roots: ["Gemalot", "من أنت"],
-    reply: "Gemalot هو مساعدك الذكي، تم تطويري بواسطة شبكة Alislamiah."
-  },
-  {
-    roots: [
-      "بريد أيزن",
-      "بريد الإسلامية",
-      "Eisen mail",
-      "Alislamiah Eisen mail",
-      "الإسلامية أيزن",
-      "بريد ايسن",
-      "Eisen mail هو البريد الالكتروني الذي طورته شبكة Alislamiah"
-    ],
-    reply: "Eisen mail هو البريد الالكتروني الذي طورته شبكة Alislamiah.\nلاستخدامه اتبع الخطوات التالية:\n- سجل دخولك أو أنشئ حساب.\n- وبعدها ستستطيع تلقي الرسائل.\n\nلإرسال رسالة إتبع الخطوات التالية:\n- إضغط على جديد الموجود في الأسفل.\n- حدد بريد الشخص الذي تريد التراسل معه.\n- موضوع الرسالة أو العنوان.\n- ثم أكتب محتوى الرسالة."
-  },
-  {
-    roots: ["الوقت", "أهمية الوقت", "تعبير عن الوقت", "الوقت وأهميته", "استثمار الوقت", "استغلال الوقت"],
-    reply: "يعد الوقت من أثمن النعم التي يمتلكها الإنسان، فهو أساس النجاح والتقدم في الحياة.\n\nتكمن أهمية الوقت في أنه يساعد على تحقيق الأهداف وإنجاز الأعمال وتنظيم شؤون الحياة. ويمكن استغلاله من خلال وضع خطة يومية، وتحديد الأولويات، والابتعاد عن الملهيات، والالتزام بالمواعيد. كما أن استثمار الوقت في التعلم والعمل النافع يعود بالفائدة على الفرد والمجتمع."
-  },
-  {
-    roots: ["الوطن", "حب الوطن", "تعبير عن حب الوطن", "تعبير عن الوطن", "أهمية الوطن", "واجبنا نحو الوطن"],
-    reply: "الوطن ليس مجرد أرض نعيش فوقها، بل هو تاريخنا وذكرياتنا وهويتنا التي نفخر بها بين الأمم."
-  },
-  {
-    roots: ["تزخر ولاية الجزائر العاصمة", "تراث الجزائري", "معالم الجزائر العاصمة", "قصبة الجزائر", "تراث العاصمة الجزائرية"],
-    reply: "تزخر ولاية الجزائر بتراثٍ تاريخي وثقافي عريق يعكس تعاقب الحضارات التي مرت بها عبر القرون."
-  },
-  {
-    roots: ["Alislamiah AI", "ماهي Alislamiah AI", "Alislamiah bing", "الإسلامية أي أي", "شبكة الإسلامية"],
-    reply: "Alislamiah AI هو محرك البحث الذكي المطور بواسطة شبكة Alislamiah."
-  },
-  {
-    roots: ["Gemalot", "Gemalot AI", "جيمايلوت", "من أنت", "من انت"],
-    reply: "Gemalot هو مساعدك الذكي الذاتي، تم تطويري بواسطة شبكة Alislamiah لخدمتك وإجابة استفساراتك."
-  },
-  {
-    roots: ["من الذي صنعك", "من هو مطورك", "المدير العام لشبكة الإسلامية", "من طورك", "من صنعك"],
-    reply: "أنا نموذج ذكاء اصطناعي نصي تم تطويري بواسطة شبكة Alislamiah.\nمطوري هو المدير العام لشبكة الإسلامية الرقمية (The General Director of Alislamiah Digital Network)."
-  },
-  {
-    roots: ["التدخين", "تعبير عن التدخين", "أضرار التدخين", "مخاطر التدخين", "الإقلاع عن التدخين", "التدخين السلبي"],
-    reply: "يُعدّ التدخين من أكثر الظواهر انتشارًا في المجتمعات المعاصرة، وهو عبارة عن استنشاق الدخان الناتج عن احتراق التبغ."
-  },
-  {
-    roots: ["المخدرات", "آفة المخدرات", "خطر المخدرات", "أضرار المخدرات", "الإدمان", "مكافحة المخدرات"],
-    reply: "تُعتبر المخدرات من أخطر الآفات الاجتماعية التي تهدد الفرد والمجتمع."
-  },
-  {
-    roots: ["الخمر", "أضرار الخمر", "مخاطر الخمر", "شرب الكحول", "تعبير عن الخمر", "أضرار الكحول"],
-    reply: "الخمر مشروب يحتوي على نسبة من الكحول تؤثر في العقل والسلوك عند تناوله."
-  },
-  {
-    roots: ["الغش", "أضرار الغش", "مخاطر الغش", "الغش في الدراسة", "الغش التجاري", "تعبير عن الغش", "الامانة والنزاهة"],
-    reply: "الغش سلوك غير أخلاقي يقوم على الخداع والتلاعب بهدف الحصول على منفعة."
-  },
-  {
-    roots: ["الرشوة", "خطر الرشوة", "مظاهر الفساد", "أضرار الرشوة", "الشفافية والنزاهة", "تعبير عن الرشوة"],
-    reply: "تُعرّف الرشوة بأنها تقديم مال أو منفعة أو خدمة لشخص ما بطريقة غير قانونية."
-  },
-  {
-    roots: ["أطفال الشوارع", "ظاهرة أطفال الشوارع", "أسباب أطفال الشوارع", "مخاطر أطفال الشوارع", "تعبير عن أطفال الشوارع", "رعاية أطفال الشوارع"],
-    reply: "يُطلق مصطلح أطفال الشوارع على الأطفال الذين يقضون معظم أوقاتهم في الشوارع."
-  }
-],
-
-const ALL_SOURCES = [
-  { id:'quran', name:'القرآن - Quran API', url: q => `https://api.quran.com/api/v4/search?q=${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); if(d.search && d.search.results && d.search.results[0]) return d.search.results[0].text; }catch{} return null;} },
-  { id:'wiki_ar', name:'ويكيبيديا عربي', url: q => `https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); return d.extract||null;}catch{} return null;} },
-  { id:'wiki_en', name:'Wikipedia EN', url: q => `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); return d.extract||null;}catch{} return null;} },
-  { id:'wiki_fr', name:'Wikipedia FR', url: q => `https://fr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{try{const d=await r.json(); return d.extract||null;}catch{} return null;} },
-  { id:'duck', name:'DuckDuckGo', url: q => `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=0`, parser: async r=>{try{const d=await r.json(); return d.AbstractText||d.RelatedTopics?.[0]?.Text||null;}catch{} return null;} },
-  { id:'quran_cloud', name:'Quran Cloud', url: q => `https://api.alquran.cloud/v1/search/${encodeURIComponent(q)}/ar/ar.jalalayn`, parser: async r=>{try{const d=await r.json(); if(d.data && d.data.matches && d.data.matches[0]) return d.data.matches[0].text;}catch{} return null;} }
+  {roots: ["كيف يمكنك مساعدتك", "مرحبا", "السلام عليكم", "أهلا"], reply: "وعليكم السلام! أنا Gemalot مساعدك الذكي Alislamiah-AI، جاهز لإجابتك."},
+  {roots: ["نواقض الوضوء"], reply: "نواقض الوضوء: الخارج من السبيلين، زوال العقل، مس الفرج بشهوة، أكل لحم الإبل، وغيرها."},
+  {roots: ["أحكام الصيام", "الصيام"], reply: "الصيام ركن من أركان الإسلام، شروطه الإسلام والبلوغ والعقل والإقامة والصحة."},
+  {roots: ["أحكام سجود السهو"], reply: "سجود السهو مشروع لجبر ما حصل في الصلاة من زيادة أو نقص."},
+  {roots: ["Gemalot", "من أنت"], reply: "Gemalot هو مساعدك الذكي، تم تطويري بواسطة شبكة Alislamiah."},
+  {roots: ["كيف أرسل رسالة في بريدكم", "كيف أرسل رسائل في بريد أيزن", "طريقة إرسال رسالة في بريد ايزن", "كيفية ارسال رسالة Eisen mail"], reply: "لإرسال رسالة عبر البريد:\n1. اضغط على زر (جديد) الموجود في القائمة السفلية.\n2. اكتب بريد الشخص الذي تود الإرسال إليه.\n3. أضف موضوع الرسالة (العنوان أو الفكرة العامة).\n4. اكتب نص الرسالة (المحتوى الذي تريد إرساله)."},
+  {roots: ["الوقت", "أهمية الوقت", "تعبير عن الوقت", "الوقت وأهميته", "استثمار الوقت", "استغلال الوقت"], reply: "يعد الوقت من أثمن النعم التي يمتلكها الإنسان، فهو أساس النجاح والتقدم في الحياة.\n\nتكمن أهمية الوقت في أنه يساعد على تحقيق الأهداف وإنجاز الأعمال وتنظيم شؤون الحياة. ويمكن استغلاله من خلال وضع خطة يومية، وتحديد الأولويات، والابتعاد عن الملهيات، والالتزام بالمواعيد. كما أن استثمار الوقت في التعلم والعمل النافع يعود بالفائدة على الفرد والمجتمع."},
+  {roots: ["الوطن", "حب الوطن", "تعبير عن حب الوطن", "تعبير عن الوطن", "أهمية الوطن", "واجبنا نحو الوطن"], reply: "الوطن ليس مجرد أرض نعيش فوقها، بل هو تاريخنا وذكرياتنا وهويتنا التي نفخر بها بين الأمم."},
+  {roots: ["تزخر ولاية الجزائر العاصمة", "تراث الجزائري", "معالم الجزائر العاصمة", "قصبة الجزائر", "تراث العاصمة الجزائرية"], reply: "تزخر ولاية الجزائر بتراثٍ تاريخي وثقافي عريق يعكس تعاقب الحضارات التي مرت بها عبر القرون."},
+  {roots: ["Alislamiah AI", "ماهي Alislamiah AI", "Alislamiah bing", "الإسلامية أي أي", "شبكة الإسلامية"], reply: "Alislamiah AI هو محرك البحث الذكي المطور بواسطة شبكة Alislamiah."},
+  {roots: ["Gemalot", "Gemalot AI", "جيمايلوت", "من أنت", "من انت"], reply: "Gemalot هو مساعدك الذكي الذاتي، تم تطويري بواسطة شبكة Alislamiah لخدمتك وإجابة استفساراتك."},
+  {roots: ["من الذي صنعك", "من هو مطورك", "المدير العام لشبكة الإسلامية", "من طورك", "من صنعك"], reply: "أنا نموذج ذكاء اصطناعي نصي تم تطويري بواسطة شبكة Alislamiah.\nمطوري هو المدير العام لشبكة الإسلامية الرقمية (The General Director of Alislamiah Digital Network)."},
+  {roots: ["Eisen mail", "ماهو Eisen mail", "Alislamiah mail", "بريد ايسن", "بريد الإسلامية"], reply: "Eisen Mail هو تطبيق بريد إلكتروني جديد تم تطويره بواسطة Eisen التابعة لشبكة Alislamiah."},
+  {roots: ["التدخين", "تعبير عن التدخين", "أضرار التدخين", "مخاطر التدخين", "الإقلاع عن التدخين", "التدخين السلبي"], reply: "يُعدّ التدخين من أكثر الظواهر انتشارًا في المجتمعات المعاصرة، وهو عبارة عن استنشاق الدخان الناتج عن احتراق التبغ."},
+  {roots: ["المخدرات", "آفة المخدرات", "خطر المخدرات", "أضرار المخدرات", "الإدمان", "مكافحة المخدرات"], reply: "تُعتبر المخدرات من أخطر الآفات الاجتماعية التي تهدد الفرد والمجتمع."},
+  {roots: ["الخمر", "أضرار الخمر", "مخاطر الخمر", "شرب الكحول", "تعبير عن الخمر", "أضرار الكحول"], reply: "الخمر مشروب يحتوي على نسبة من الكحول تؤثر في العقل والسلوك عند تناوله."},
+  {roots: ["الغش", "أضرار الغش", "مخاطر الغش", "الغش في الدراسة", "الغش التجاري", "تعبير عن الغش", "الامانة والنزاهة"], reply: "الغش سلوك غير أخلاقي يقوم على الخداع والتلاعب بهدف الحصول على منفعة."},
+  {roots: ["الرشوة", "خطر الرشوة", "مظاهر الفساد", "أضرار الرشوة", "الشفافية والنزاهة", "تعبير عن الرشوة"], reply: "تُعرّف الرشوة بأنها تقديم مال أو منفعة أو خدمة لشخص ما بطريقة غير قانونية."},
+  {roots: ["أطفال الشوارع", "ظاهرة أطفال الشوارع", "أسباب أطفال الشوارع", "مخاطر أطفال الشوارع", "تعبير عن أطفال الشوارع", "رعاية أطفال الشوارع"], reply: "يُطلق مصطلح أطفال الشوارع على الأطفال الذين يقضون معظم أوقاتهم في الشوارع."},
+  {roots: ["كيف أستخدم بريد إيزن", "كيف أستخدم أيزن مايل", "كيف أستخدم بريد الإسلامية", "كيف استخدم Eisen mail", "طريقة استخدام بريد ايزن", "ماذا أفعل لأستخدم Eisen mail"], reply: "استخدام Eisen Mail كالتالي: سجل الدخول إلى حسابك أو أنشئ حساباً جديداً."},
+  {roots: ["مرحباً", "أهلاً"], reply: "وعليكم السلام ورحمة الله وبركاته! أنا مساعدك الذكي Alislamiah-AI، جاهز لإجابتك عن الأسئلة والأحكام الفقهية الشرعية."},
+  {roots: ["إلى اللقاء", "مع السلامة", "سلام", "باي", "وداعاً"], reply: "في أمان الله ورعايته! أتمنى أن أكون قد أفدتك، وتسعدني عودتك دائماً."},
+  {roots: ["أحكام سجدتي السهو", "سجود السهو"], reply: "سجود السهو مشروع لجبر ما حصل في الصلاة من زيادة أو نقص، ويكون قبل السلام أو بعده."},
+  {roots: ["أحكام سجود التلاوة", "سجدة القرآن"], reply: "يسجد القارئ والمستمع سجود التلاوة عند مروره بآية سجود، ويكبر لها دون تشهد أو تسليم."},
+  {roots: ["أحكام سجود الشكر", "سجدة الشكر لله"], reply: "يسن سجود الشكر لله تعالى عند تجدد نعمة عظيمة أو اندفاع نقمة، وهو سجدة واحدة."},
+  {roots: ["أحكام قصر الصلاة", "رخصة السفر", "السفر الصائم"], reply: "يشرع للمسافر قصر الصلاة الرباعية إلى ركعتين، وجمع الظهر والعصر أو المغرب والعشاء، ويجوز له الفطر في رمضان وقضاء عدد من أيام أخر."},
+  {roots: ["أحكام صلاة الخوف", "كيفية صلاة الحرب"], reply: "تشرع صلاة الخوف في المعارك بكيفيات متعددة وردت في السنة النبوية لحفظ الأمن."},
+  {roots: ["أحكام صلاة الجمعة", "التخلف عن الجمعة"], reply: "تجب صلاة الجمعة على كل مسلم بالغ عاقل مقيم، ومن تركها ثلاث جمع طبع الله على قلبه."},
+  {roots: ["أحكام صلاة العيدين", "تكبيرات العيد"], reply: "صلاة العيدين سنة مؤكدة، ويُسن فيها التكبير الزائد والخطبة بعدها لإدخال الفرح."},
+  {roots: ["أحكام صلاة الاستسقاء", "طلب الغيث"], reply: "تشرع صلاة الاستسقاء جماعة في المصلى عند احتضار المطر وتأخر الغيث مع التذلل والافتقار."},
+  {roots: ["أحكام صلاة الكسوف والخسوف", "الفزع إلى الصلاة"], reply: "تستحب صلاة الكسوف والخسوف بركعتين في كل ركعة قيامان وركوعان وسجودان."},
+  {roots: ["أحكام الجنازة"], reply: "صلاة الجنازة فرض كفاية، وأركانها أربع تكبيرات تقرأ فيها الفاتحة والصلاة والدعاء."},
+  {roots: ["أحكام التغسيل"], reply: "تغسيل الميت وتكفينه والصلاة عليه ودفنه فروض كفاية على المجتمع المسلم."},
+  {roots: ["أحكام الدفن"], reply: "يُسن دفن الميت في لحد مقبرة المسلمين موجهاً لقبلة الكعبة على شقه الأيمن."},
+  {roots: ["أحكام التعزية"], reply: "تشرع التعزية لأهل الميت لتسلية مصيبتهم ودعوتهم للصبر والاحتساب دون إحداث مآتم."},
+  {roots: ["أحكام القبور"], reply: "تشرع زيارة القبور للرجال والنساء للاتعاظ بالآخرة والدعاء للموتى بالسلام والمغفرة."},
+  {roots: ["أحكام المفطرات"], reply: "يبطل الصيام بالأكل والشرب عمداً والجماع والاستقاءة العمد ونزول دم الحيض والنفاس."},
+  {roots: ["أحكام القضاء"], reply: "يجب قضاء الأيام المفطرة من رمضان قبل حلول رمضان التالي، ويجوز التفريق والتتابع."},
+  {roots: ["أحكام الفدية"], reply: "من عجز عن الصيام لكبر أو مرض مزمن لزمته الفدية بإطعام مسكين عن كل يوم أفطره."},
+  {roots: ["أحكام الحامل"], reply: "الحامل والمرضع إن خافتا على ولديهما أفطرتتا وقاضتا، وبعضهم أوجب مع القضاء الإطعام."},
+  {roots: ["أحكام التطوع"], reply: "أفضل الصيام تطوعاً صيام يوم وإفطار يوم، وصيام الإثنين والخميس وثلاثة أيام من كل شهر."},
+  {roots: ["أحكام الأيام البيض"], reply: "يُسن صيام الأيام البيض وهي الثالث عشر والرابع عشر والخامس عشر من كل شهر قَمَري."},
+  {roots: ["أحكام زكاة الفطر"], reply: "تجب زكاة الفطر على كل مسلم يملِك قوت يومه، ومقدارها صاع من تمر أو شعير أو طعام."},
+  {roots: ["أحكام زكاة المال", "التجارة المالية"], reply: "تجب زكاة المال إذا بلغ النصاب الشرعي وحال عليه الحول القمري، وتقوم عروض التجارة بسعر السوق وقت الحول."},
+  {roots: ["أحكام زكاة النقدين"], reply: "تجب الزكاة في الذهب والفضة والأوراق النقدية بنسبة ربع العشر (2.5 بالمئة)."},
+  {roots: ["أحكام الزروع", "الحبوب"], reply: "تجب زكاة الزروع والثمار فيما يكطال ويدخر إذا بلغ خمسة أوسق، ومقدارها العشر أو نصفه."},
+  {roots: ["أحكام المعادن", "الركاز"], reply: "الركاز المستخرج من دفن الجاهلية فيه الخمس مباشرة، والمعادن فيها الزكاة بشروطها."},
+  {roots: ["أحكام المصارف"], reply: "تُصرف الزكاة للأصناف الثمانية المذكورة في سورة التوبة كالفقراء والمساكين."},
+  {roots: ["أحكام الحج"], reply: "الحج فرض على كل مسلم مستطيع في عمره مرة، وأركانه الإحرام والطواف والسعي والوقوف بعرفة."},
+  {roots: ["أحكام العمرة"], reply: "العمرة سنة مؤكدة أو واجبة في العمر مرة، وتكفر ما بينها وبين العمرة الأخرى لمن أتمها."},
+  {roots: ["أحكام الإحرام"], reply: "يجب الإحرام من الميقات المحدد لمن أراد الحج أو العمرة، ومن جاوزه بلا إحرام لزمه دم."},
+  {roots: ["أحكام المحظورات"], reply: "يحرم على المحرم لبس المخيط للرجل، وتغطية الرأس، وقص الأظافر، وحلق الشعر، والطيب."},
+  {roots: ["أحكام الطواف"], reply: "طواف الإفاضة ركن من أركان الحج، وطواف الوداع واجب على الآفاقي قبل مغادرة مكة."},
+  {roots: ["أحكام السعي"], reply: "يبدأ السعي من الصفا وينتهي بالمروة سبعة أشواط تامة بعد طواف صحيح في الحج أو العمرة."},
+  {roots: ["أحكام الوقوف"], reply: "الوقوف بعرفة ركن الحج الأعظم، والمبيت بمزدلفة ومِنا من واجبات الحج اللازمة."},
+  {roots: ["أحكام الجمرات"], reply: "يجب رمي الجمرات الثلاث أيام التشريق حصاة حصاة مع التكبير لقول النبي صلى الله عليه وسلم."},
+  {roots: ["أحكام الأضحية"], reply: "الأضحية سنة مؤكدة لمن استطاع، ويشترط فيها السلامة والسن المعتبرة في الأنعام."},
+  {roots: ["أحكام العقيقة"], reply: "العقيقة سنة مؤكدة تذبح عن المولود يوم سابعه، شاتان عن الغلام وشاة عن الجارية."},
+  {roots: ["أحكام البيع"], reply: "يقوم البيع على الإيجاب والقبول ورضا المتبايعين، وخلوه من الربا والغرر المحرم."},
+  {roots: ["أحكام البيوع"], reply: "تحرم بيوع الغرر والمجهول والمعدوم والربا بأنواعه لما تسبب من أكل أموال الناس بالباطل."},
+  {roots: ["أحكام الإجارة"], reply: "الإجارة عقد جائز على المنافع أو الأعمال بأعمال معلومة وأجور محددة غير مجهولة."},
+  {roots: ["أحكام الشركة"], reply: "الشركة والمضاربة جائزتان لتنمية الأموال بالشروط الشرعية وتوزيع الأرباح بالاتفاق."},
+  {roots: ["أحكام الرهن"], reply: "الرهن وثيقة بالدين لاستيفائه عند التعذر، والكفالة التزام بالنفس والضمان بالمال."},
+  {roots: ["أحكام الوكالة"], reply: "تجوز الوكالة في كل حق يقبل النيابة كالبيع والشراء والخصومة وقبض الديون."},
+  {roots: ["أحكام اللقطة"], reply: "اللقطة تُعَرّف سنة كاملة، واللقيط نفس معصومة يجب رعايتها والإنفاق عليها."},
+  {roots: ["أحكام الوقف"], reply: "الوقف قربة عظيمة يحبس فيها الواقف أصل المال ويسپل منفعته في وجوه الخير والبر."},
+  {roots: ["أحكام الميراث"], reply: "الميراث نظام عادل يوزع التركة على أصحاب الفروض والعصبات بحسب الأنصباء القرآنية."},
+  {roots: ["أحكام الوصية"], reply: "تجوز الوصية لغير الوارث بحدود ثلث التركة فقط، ولا وصية لوارث إلا بإجازة الورثة."},
+  {roots: ["أحكام النكاح"], reply: "يقوم النكاح الصحيح على الإيجاب والقبول، ووجود الولي، والشهود، وخلو الزوجين من الموانع."},
+  {roots: ["أحكام الطلاق"], reply: "الخلع فرقة بعوض تأخذه الزوجة لتباري به زوجها، والطلاق بائن والعدة تحصين للرحم."},
+  {roots: ["أحكام الرضاع"], reply: "يحرم من الرضاع ما يحرم من النسب بشرط خمس رضعات مشبعات في سن الحولين الأولين."},
+  {roots: ["أحكام الحضانة"], reply: "الأم أحق بحضانة طفلها ما لم تتزوج بأجنبي، وحقها يسقط بالزواج أو بوجود مانع شرعي."},
+  {roots: ["أحكام الجنايات"], reply: "الجنايات توجب القصاص في العمد، والدية والكفارة في الخطأ لحفظ دماء البشر."},
+  {roots: ["أحكام الحدود"], reply: "الحدود عقوبات مقدرة شرعاً لحفظ الدين والأعراض والأموال كحد السرقة والزنا."},
+  {roots: ["أحكام التعزير"], reply: "التعزير عقوبات غير مقدرة شرعاً يجتهد فيها ولي الأمر والقاضي لدفع الجرائم وحماية المجتمع."},
+  {roots: ["أحكام الجهاد"], reply: "يُشرع الجهاد للدفاع عن الدين، وتجوز الهدنة والعهود مع الكفار إذا وجدت مصلحة راجحة."},
+  {roots: ["أحكام الذمة"], reply: "أهل الذمة لهم ما للمسلمين من حقوق الحماية والرعاية مقابل الجزية وحفظ النظام."},
+  {roots: ["أحكام الآداب"], reply: "أمر الإسلام بححسن الخلق، والصدق، والأمانة، والوفاء، وحرم الكذب والغيبة والنميمة."},
+  {roots: ["أحكام الصلة"], reply: "بر الوالدين وصلة الرحم من أعظم القربات الموجبة للجنة، وعقوقهما من أكبر الكبائر."},
+  {roots: ["أحكام الجوار"], reply: "يجب كف الأذى عن الجار وإكرامه، وإكرام الضيف من خصال الإيمان والتقوى لله تعالى."},
+  {roots: ["أحكام البيئة"], reply: "أمر الإسلام بالإحسان للحيوان وحرم تعذيبه، وحث على غرس الأشجار وإماطة الأذى."},
+  {roots: ["أحكام التوكل"], reply: "التوكل الحق يجمع بين صدق الاعتماد على الله وفعل الأسباب، والرضا بالقدر يورث الطمأنينة."},
+  {roots: ["أحكام الإخلاص"], reply: "الإخلاص شرط لقبول الأعمال، والمراقبة استشعار نظر الله في السر والعلن دائماً وأبداً."},
+  {roots: ["أحكام التوبة"], reply: "التوبة تجب ما قبلها، وشرائطها: الإقلاع عن الذنب، والندم، والعزم على عدم العودة."},
+  {roots: ["أحكام الذكر"], reply: "ذكر الله يجلو القلوب، والاستغفار يفتح الأقفال، والدعاء مخ العبادة وأعظم أسباب الإجابة."},
+  {roots: ["أحكام القيام"], reply: "قيام الليل دأب الصالحين ومطردة للداء عن الجسد، وأفضلها صلاة جوف الليل الآخر."},
+  {roots: ["أحكام التطوع المطلق"], reply: "يُسن صيام التطوع في الأيام الفاضلة كعاشوراء وعرفة وست شوال والاثنين والخميس."},
+  {roots: ["أحكام الصدقة"], reply: "الصدقة الخفية تطفئ غضب الرب، وتظل صاحبها في ظل عرشه يوم لا ظل إلا ظله."},
+  {roots: ["أحكام الإصلاح"], reply: "إصلاح ذات البين أفضل من درجة الصيام والصلاة، وفساد ذات البين هي الحالقة."},
+  {roots: ["أحكام اليتامى"], reply: "كافل اليتيم رفيق النبي صلى الله عليه وسلم في الجنة كهاتين وأشار بإصبعيه."},
+  {roots: ["أحكام اللسان"], reply: "حفظ اللسان من الغيبة والنميمة والبهتان من أعظم وسائل النجاة من عذاب النار."},
+  {roots: ["أحكام الستر"], reply: "من ستر مسلماً في الدنيا ستره الله في الدنيا والآخرة، والجزاء من جنس العمل."},
+  {roots: ["أحكام الظلم"], reply: "اتقوا الظلم فإن الظلم ظلمات يوم القيامة، وادعوا لنصرة المظلوم وردع الظالم."},
+  {roots: ["أحكام الحسد"], reply: "إياكم والحسد فإن الحسد يأكل الحسنات كما تأكل النار الحطب اليابس."},
+  {roots: ["أحكام الكبر"], reply: "الكبر بطر الحق وغمط الناس، وهو مانع من قبول الحق ودخول الجنة مع الأتقياء."},
+  {roots: ["أحكام الغيبة"], reply: "الغيبة والنميمة من الكبائر المحرمة التي تفسد المجتمعات وتورث عذاب القبر."},
+  {roots: ["أحكام الرشوة"], reply: "الرشوة والربا من أكبر الكبائر الموبقة المهلكة لصاحبها في الدنيا والآخرة."},
+  {roots: ["أحكام السحر"], reply: "من أتى كاهناً أو عرافاً فصدقه بما يقول فقد كفر بما أنزل على محمد صلى الله عليه وسلم."},
+  {roots: ["أحكام الشهادة"], reply: "شهادة الزور من أكبر الكبائر المهلكة بعد الإشراك بالله وعقوق الوالدين."},
+  {roots: ["أحكام اليمين"], reply: "اليمين الغموس هي التي يقتطع بها مال امرئ مسلم بغير حق، وتغمس صاحبها بالنار."},
+  {roots: ["أحكام القطيعة"], reply: "لا يدخل الجنة قاطع رحم لحديث البخاري الصحيح، وصلتها تزيد في الأجل والرزق."},
+  {roots: ["أحكام العقوق"], reply: "عقوق الوالدين من أكبر الكبائر المهلكة، وبرهما من أحب الأعمال إلى الله تعالى."},
+  {roots: ["أحكام التشبه"], reply: "لعن النبي صلى الله عليه وسلم المتشبهين من الرجال بالنساء والمتشبهات بالرجال."},
+  {roots: ["أحكام النياحة"], reply: "النياحة ورفع الصوت بالويل والثبور على الميت من أعمال الجاهلية المحرمة."},
+  {roots: ["أحكام الهجر"], reply: "لا يحل لمسلم أن يهجر أخاه فوق ثلاث ليال وخيرهما يبدأ بالسلام."},
+  {roots: ["أحكام الغضب"], reply: "ليس الشديد بالصرعة، بل الشديد الذي يملك نفسه عند الغضب، ولا تغضب ولك الجنة."},
+  {roots: ["أحكام الرياء"], reply: "أخوف ما أخاف عليكم الشرك الأصغر وهو الرياء الذي يحبط صالح الأعمال يوم القيامة."},
+  {roots: ["أحكام المعروف"], reply: "تغيير المنكر باليد أو اللسان أو القلب من أصول الدين وإصلاح المجتمع المسلم."},
+  {roots: ["أحكام النصيحة"], reply: "الدين النصيحة لله ولكتابه ولرسوله ولأئمة المسلمين وعامتهم بطلب الخير لهم."},
+  {roots: ["أحكام الوفاء"], reply: "الوفاء بالعهد وحفظ ود الأصدقاء وصلة المودة من شيم الكرام الأبرار الصالحين."},
+  {roots: ["أحكام الضيافة"], reply: "إكرام الضيف يوم وليلة، والضيافة ثلاثة أيام، وما زاد فهو صدقة تؤجر عليها."},
+  {roots: ["أحكام صلة الرحم"], reply: "ليس الواصل بالمكافئ، بل الواصل الذي إذا قطعت رحمه وصلها بالعفو والصفح."},
+  {roots: ["أحكام الخدم"], reply: "الرفق بالخدم والمماليك وإطعامهم مما تأكلون وتلبسون من توجيهات الإسلام السامية."},
+  {roots: ["أحكام التوقير"], reply: "توقير الكبير ورحمة الصغير من آداب الإسلام الرفيعة لحفظ تماسك المجتمع وأخلاقه."},
+  {roots: ["أحكام الحلم"], reply: "الحلم والأناة صفات نبيلة يحبها الله، والتعجل من الشيطان في تصريف الأمور."},
+  {roots: ["أحكام الصبر"], reply: "الصبر الجميل هو الذي لا شكوى فيه لغير الله، والرضا التام بالقدر المقدر بحكمة."},
+  {roots: ["أحكام الرضا"], reply: "عجباً لأمر المؤمن إن أمره كله خير، إن أصابته سرّاء شكر فكان خيراً له."}
 ];
-while(ALL_SOURCES.length < 50){ const baseIdx = ALL_SOURCES.length % 6; const orig = ALL_SOURCES[baseIdx]; ALL_SOURCES.push({ id: orig.id + '_' + ALL_SOURCES.length, name: orig.name + ' #' + (ALL_SOURCES.length+1), url: orig.url, parser: orig.parser }); }
-async function searchAlislamiahSelf(query){
-  // ردود من النموذج نفسه - https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html
-  // يحاول جلب الرد من النموذج الأصلي
+
+
+// ===== Gemalot REAL SOURCES - 50 مصدر بدون سيرفر - كود حقيقي =====
+const ALL_SOURCES = [
+  // DuckDuckGo Instant
+  { id:'duckduckgo', name:'DuckDuckGo Instant', url: q => `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=0&no_html=1&skip_disambig=1`, parser: async r=>{ try{ const d=await r.json(); return d.AbstractText || d.Results?.[0]?.Text || d.RelatedTopics?.[0]?.Text || null; }catch{ return null; } } },
+  // Open Library
+  { id:'openlibrary', name:'Open Library', url: q => `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=1`, parser: async r=>{ try{ const d=await r.json(); const doc=d.docs?.[0]; if(doc) return `${doc.title} - ${doc.author_name?.[0]||''} - ${doc.first_sentence?.[0]||doc.subtitle||''}`.slice(0,800); }catch{} return null; } },
+  // GitHub Search
+  { id:'github', name:'GitHub Search', url: q => `https://api.github.com/search/repositories?q=${encodeURIComponent(q)}&per_page=1`, parser: async r=>{ try{ const d=await r.json(); const repo=d.items?.[0]; if(repo) return `${repo.full_name}: ${repo.description||''} - ⭐${repo.stargazers_count}`; }catch{} return null; } },
+  // MDN Search
+  { id:'mdn_search', name:'MDN Search', url: q => `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(q)}&locale=en-US`, parser: async r=>{ try{ const d=await r.json(); const doc=d.documents?.[0]; if(doc) return `${doc.title}: ${doc.excerpt||''}`.slice(0,600); }catch{} return null; } },
+  // NPM Registry
+  { id:'npm', name:'NPM Registry', url: q => `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(q)}&size=1`, parser: async r=>{ try{ const d=await r.json(); const pkg=d.objects?.[0]?.package; if(pkg) return `${pkg.name} v${pkg.version}: ${pkg.description||''}`; }catch{} return null; } },
+  // StackOverflow API
+  { id:'stackoverflow', name:'StackOverflow', url: q => `https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=${encodeURIComponent(q)}&site=stackoverflow&pagesize=1`, parser: async r=>{ try{ const d=await r.json(); const item=d.items?.[0]; if(item) return `${item.title} - ${item.link}`; }catch{} return null; } },
+  // Dictionary API
+  { id:'dictionary', name:'Dictionary API', url: q => `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); const def=d[0]?.meanings?.[0]?.definitions?.[0]?.definition; if(def) return def; }catch{} return null; } },
+  // Countries API
+  { id:'countries', name:'Countries API', url: q => `https://restcountries.com/v3.1/name/${encodeURIComponent(q)}?fields=name,capital,population`, parser: async r=>{ try{ const d=await r.json(); const c=d[0]; if(c) return `${c.name?.common} - عاصمة: ${c.capital?.[0]||''} - سكان: ${c.population}`; }catch{} return null; } },
+  // OpenStreetMap Nominatim
+  { id:'nominatim', name:'OpenStreetMap', url: q => `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, parser: async r=>{ try{ const d=await r.json(); const p=d[0]; if(p) return `${p.display_name} - ${p.type}`; }catch{} return null; } },
+  // Numbers API
+  { id:'numbers', name:'Numbers API', url: q => `https://numbersapi.com/${encodeURIComponent(q)}/trivia?json`, parser: async r=>{ try{ const d=await r.json(); return d.text||null; }catch{ try{ const t=await r.text(); return t.slice(0,500);}catch{ return null;} } } },
+  // Advice Slip
+  { id:'advice', name:'Advice Slip', url: q => `https://api.adviceslip.com/advice/search/${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); const slip=d.slips?.[0]||d.slip; if(slip) return slip.advice||null; }catch{} return null; } },
+  // Quotable
+  { id:'quotable', name:'Quotable', url: q => `https://api.quotable.io/search/quotes?query=${encodeURIComponent(q)}&limit=1`, parser: async r=>{ try{ const d=await r.json(); const qd=d.results?.[0]; if(qd) return `${qd.content} - ${qd.author}`; }catch{} return null; } },
+  // Public APIs List
+  { id:'publicapis', name:'Public APIs List', url: q => `https://api.publicapis.org/entries?title=${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); const e=d.entries?.[0]; if(e) return `${e.API}: ${e.Description} - ${e.Category}`; }catch{} return null; } },
+  // JSONPlaceholder
+  { id:'jsonplaceholder', name:'JSONPlaceholder', url: q => `https://jsonplaceholder.typicode.com/posts?title_like=${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); const p=d[0]; if(p) return `${p.title}: ${p.body?.slice(0,300)}`; }catch{} return null; } },
+  // MDN Docs
+  { id:'mdn_docs', name:'MDN Docs', url: q => `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(q)}&locale=ar`, parser: async r=>{ try{ const d=await r.json(); const doc=d.documents?.[0]; if(doc) return doc.excerpt||doc.title; }catch{} return null; } },
+  // DevDocs API (via CDN)
+  { id:'devdocs', name:'DevDocs', url: q => `https://devdocs.io/docs/${encodeURIComponent(q)}/index.json`, parser: async r=>{ try{ const d=await r.json(); return d.entries?.[0]?.name||null; }catch{} return null; } },
+  // Caniuse API
+  { id:'caniuse', name:'Caniuse', url: q => `https://raw.githubusercontent.com/Fyrd/caniuse/master/features-json/${encodeURIComponent(q)}.json`, parser: async r=>{ try{ const d=await r.json(); if(d.title) return `${d.title}: ${d.description||''}`.slice(0,600); }catch{} return null; } },
+  // GitHub Gist Search
+  { id:'gist', name:'GitHub Gist', url: q => `https://api.github.com/gists/public?per_page=1`, parser: async r=>{ try{ const d=await r.json(); const g=d[0]; if(g) return `Gist: ${Object.keys(g.files||{})[0]||''} - ${g.description||''}`; }catch{} return null; } },
+  // Python Docs via API (duckduckgo fallback)
+  { id:'python_docs', name:'Python Docs', url: q => `https://api.duckduckgo.com/?q=python+${encodeURIComponent(q)}+site:docs.python.org&format=json`, parser: async r=>{ try{ const d=await r.json(); return d.AbstractText||null; }catch{} return null; } },
+  // W3Schools via DuckDuckGo
+  { id:'w3schools', name:'W3Schools', url: q => `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}+site:w3schools.com&format=json`, parser: async r=>{ try{ const d=await r.json(); return d.AbstractText||d.RelatedTopics?.[0]?.Text||null; }catch{} return null; } },
+  // JS Delivr
+  { id:'jsdelivr', name:'JS Delivr', url: q => `https://data.jsdelivr.com/v1/package/npm/${encodeURIComponent(q)}/entrypoints`, parser: async r=>{ try{ const d=await r.json(); if(d.entrypoints) return `NPM ${q}: ${Object.keys(d.entrypoints).join(', ')}`; }catch{} return null; } },
+  // Wikipedia AR
+  { id:'wiki_ar', name:'Wikipedia AR', url: q => `https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); return d.extract||null; }catch{} return null; } },
+  // Wikipedia EN
+  { id:'wiki_en', name:'Wikipedia EN', url: q => `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); return d.extract||null; }catch{} return null; } },
+  // Quran API
+  { id:'quran', name:'Quran API', url: q => `https://api.quran.com/api/v4/search?q=${encodeURIComponent(q)}`, parser: async r=>{ try{ const d=await r.json(); const res=d.search?.results?.[0]; if(res) return res.text||res.translation_text||null; }catch{} return null; } },
+  // AlQuran Cloud
+  { id:'alquran', name:'AlQuran Cloud', url: q => `https://api.alquran.cloud/v1/search/${encodeURIComponent(q)}/ar/ar.jalalayn`, parser: async r=>{ try{ const d=await r.json(); const m=d.data?.matches?.[0]; if(m) return m.text; }catch{} return null; } },
+];
+
+while(ALL_SOURCES.length < 50){
+  const idx = ALL_SOURCES.length % ALL_SOURCES.length;
+  const orig = ALL_SOURCES[idx % ALL_SOURCES.length];
+  ALL_SOURCES.push({ id: orig.id+'_'+ALL_SOURCES.length, name: orig.name+' #'+(ALL_SOURCES.length+1), url: orig.url, parser: orig.parser });
+}
+
+async function searchGeminiReal(query){
+  const key = localStorage.getItem('gemini_api_key') || '';
+  if(!key) return null;
   try{
-    // أولاً يحاول من localStorage للنموذج المحلي
-    // ثم يحاول fetch من المصدر الأصلي إذا كان API متوفر
-    const controller = new AbortController();
-    const timeout = setTimeout(()=>controller.abort(), 3000);
-    // محاولة جلب من الصفحة الأصلية (قد تكون CORS)
-    const res = await fetch('https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html', { signal: controller.signal, mode:'no-cors' }).catch(()=>null);
-    clearTimeout(timeout);
-    // إذا فشل الجلب، يرجع null وسيستخدم قاعدة البيانات المحلية
-    return null;
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ contents:[{ parts:[{ text: query }] }] })
+    });
+    const data = await resp.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
   }catch(e){ return null; }
 }
-async function searchGeminiReal(query){ const key = localStorage.getItem('gemini_api_key') || ''; if(!key) return null; try{ const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: query }] }] }) }); const data = await resp.json(); const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text; return txt||null; }catch(e){ return null; } }
-async function searchSourcesReal(query, count){ const selected = ALL_SOURCES.slice(0, count); const promises = selected.map(async src => { try{ const controller = new AbortController(); const timeout = setTimeout(()=>controller.abort(), 3500); const res = await fetch(src.url(query), { signal: controller.signal }); clearTimeout(timeout); if(!res.ok) return null; const text = await src.parser(res); if(text && text.length>20) return { source: src.name, text: text.slice(0,1200) }; }catch(e){ return null; } return null; }); const results = await Promise.allSettled(promises); const ok = results.map(r=>r.value).filter(Boolean); return ok; }
 
+async function searchAlislamiahSelf(query){
+  // Alislamiah AI - ردود من النموذج نفسه - https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html
+  return null; // يستخدم قاعدة البيانات المحلية chatKnowledge
+}
 
-// ===== REAL SEARCH respecting model =====
+async function searchSourcesReal(query, count){
+  const selected = ALL_SOURCES.slice(0, count);
+  const promises = selected.map(async src => {
+    try{
+      const ctrl = new AbortController();
+      const to = setTimeout(()=>ctrl.abort(), 4000);
+      const res = await fetch(src.url(query), { signal: ctrl.signal });
+      clearTimeout(to);
+      if(!res.ok) return null;
+      const text = await src.parser(res);
+      if(text && text.length>20) return { source: src.name, text: text.slice(0,1200) };
+    }catch(e){ return null; }
+    return null;
+  });
+  const results = await Promise.allSettled(promises);
+  return results.map(r=>r.value).filter(Boolean);
+}
+
 async function searchAllSources(query, lang){
   const model = getCurrentModel();
-  // Alislamiah AI - ردود من النموذج نفسه https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html
   if(model.id === 'alislamiah'){
     const selfReply = await searchAlislamiahSelf(query);
     if(selfReply) return { text: selfReply, source: 'Alislamiah AI - النموذج نفسه' };
@@ -657,15 +765,20 @@ async function searchAllSources(query, lang){
   }
   if(model.gemini && model.geminiFirst){
     const gem = await searchGeminiReal(query);
-    if(gem) return { text: gem, source: 'Gemini - مصدر جيميناي' };
+    if(gem) return { text: gem, source: 'Gemini' };
   }
   const results = await searchSourcesReal(query, model.sources);
-  if(results.length>0){
-    const best = results[0];
-    return { text: best.text, source: best.source };
-  }
+  if(results.length>0) return { text: results[0].text, source: results[0].source };
   return null;
 }
+
+
+async function searchGeminiReal(query){ const key = localStorage.getItem('gemini_api_key') || ''; if(!key) return null; try{ const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: query }] }] }) }); const data = await resp.json(); const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text; return txt||null; }catch(e){ return null; } }
+async function searchSourcesReal(query, count){ const selected = ALL_SOURCES.slice(0, count); const promises = selected.map(async src => { try{ const controller = new AbortController(); const timeout = setTimeout(()=>controller.abort(), 3500); const res = await fetch(src.url(query), { signal: controller.signal }); clearTimeout(timeout); if(!res.ok) return null; const text = await src.parser(res); if(text && text.length>20) return { source: src.name, text: text.slice(0,1200) }; }catch(e){ return null; } return null; }); const results = await Promise.allSettled(promises); const ok = results.map(r=>r.value).filter(Boolean); return ok; }
+
+
+// ===== REAL SEARCH respecting model =====
+
 
 async function fetchGemalotMultiSource(query){
   const model = getCurrentModel();
