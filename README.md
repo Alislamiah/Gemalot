@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gemalot</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 /* ===== Splash - ستايلك الأصلي مع icon.png ===== */
 .ai-splash-screen{position:fixed;inset:0;background:#07111f;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;overflow:hidden;perspective:1000px;transition:opacity .8s cubic-bezier(0.4,0,0.2,1),visibility .8s ease}
@@ -146,10 +149,11 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 <div class="model-dropdown" id="modelDropdown" style="position:fixed;top:62px;right:8px;left:8px;max-width:440px;margin:0 auto;background:#fff;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.45);padding:8px;display:none;z-index:5000;color:#111;max-height:82vh;overflow-y:auto">
   <div class="model-opt active" data-model="normal" onclick="selectModelDrop('normal')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;background:#fef9c3;cursor:pointer">
     <div style="flex:1;text-align:right"><div style="font-weight:800;font-size:16px;color:#111">Gemalot Normal</div><div style="font-size:12px;color:#6b7280;margin-top:4px">200 رسالة - 35 مصدر - بدون Gemini</div></div>
-    <div style="margin-left:12px;color:#22c55e;font-size:20px;font-weight:bold">✓</div>
+    <div class="model-check" style="width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:12px;background:#22c55e;color:#fff;font-size:16px;font-weight:bold">✓</div>
   </div>
   <div class="model-opt" data-model="pro" onclick="selectModelDrop('pro')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer;margin-top:4px">
     <div style="flex:1;text-align:right"><div style="font-weight:700;font-size:15px;color:#111">Gemalot Pro</div><div style="font-size:12px;color:#6b7280;margin-top:4px">15 رسالة - Gemini أولاً + 45 مصدر</div></div>
+    <div class="model-check" style="width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:12px;background:transparent;color:transparent;border:2px solid #e5e7eb;font-size:16px;font-weight:bold">✓</div>
   </div>
   <div class="model-opt" data-model="alislamiah" onclick="selectModelDrop('alislamiah')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:16px;cursor:pointer;margin-top:4px;background:linear-gradient(90deg,#fef9c3,#dcfce7)">
     <div style="flex:1;text-align:right"><div style="font-weight:800;font-size:15px;color:#111">Alislamiah AI</div><div style="font-size:12px;color:#6b7280;margin-top:4px">ردود من Alislamiah AI - النموذج نفسه</div></div>
@@ -216,35 +220,11 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 <script>
 const planLimits={normal:200, pro:15, alislamiah:100, pro_plus:25, pro_gold:35, pro_extra:50};
 // ===== Alislamiah AI / Gemini =====
-const GEMINI_API_KEY = "AQ.Ab8RN6IeFUlFbso5M8ry5FbzGnSBCf0w2wcSnHK6wZZuNIRJ6Q";
-const GEMINI_MODELS = ["gemini-2.5-flash","gemini-3.8-flash","gemini-3.0-flash","gemini-2.5-pro","gemini-flash-latest","gemini-1.5-flash","gemini-pro"];
+// لا نضع مفتاح Gemini داخل واجهة عامة. نموذج Alislamiah AI يجب أن يمر عبر واجهته الفعلية.
 async function askAlislamiahGemini(userText){
-  const systemPrompt = "أنت مساعد ذكي إسلامي اسمك Alislamiah-AI تابع لشبكة الإسلامية. أجب بالعربية الفصحى بوضوح. إذا كان السؤال شرعياً فاعتمد على الكتاب والسنة. كن مهذباً ومفيداً.";
-  const body = {
-    contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nسؤال المستخدم: " + userText }] }],
-    generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-  };
-  let lastError = null;
-  for (const model of GEMINI_MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-    try {
-      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        lastError = new Error(model + " " + res.status + ": " + errText.slice(0, 120));
-        if (res.status === 404) continue;
-        continue;
-      }
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return text.trim();
-    } catch (e) { lastError = e; continue; }
-  }
-  throw lastError || new Error("تعذر الاتصال بـ Alislamiah AI");
+  return await requestAlislamiahPage(userText);
 }
-function getCurrentModel(){
-  try { return localStorage.getItem('gemalot_current_model') || 'normal'; } catch(e){ return 'normal'; }
-}
+
 
 const translations={
   ar:{dir:"rtl",welcome:"كيف يمكنني مساعدتك؟",placeholder:"اسأل Gemalot",newChat:"+ محادثة جديدة",prevChats:"المحادثات السابقة",suggestions:["أنشئ صورة: مسجد مستقبلي","أنشئ فيديو: محيط","حل المعادلة: 2x+3=11","نواقض الوضوء","أحكام الصيام"],noAnswer:"عذراً، لم أجد إجابة دقيقة.",searching:"جاري البحث...",blockedTitle:"انتهت رسائلك",remaining:"متبقي: {n}/{t} اليوم"},
@@ -319,6 +299,7 @@ function applyModelUI(model){
   updateLimitUI();
 }
 
+function selectModelDrop(model){ selectModelFromDropdown(model); }
 function selectModelFromDropdown(model){
   if(model !== 'normal' && model !== 'pro' && model !== 'alislamiah') return;
   applyModelUI(model);
@@ -404,32 +385,59 @@ function triggerUpload(type){
   fileInput.click();
 }
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
-if(fileInput)fileInput.addEventListener("change", async (e)=>{
+async function extractUploadedText(file){
+  const name=file.name.toLowerCase();
+  if(file.type==="text/plain"||name.endsWith(".txt")||name.endsWith(".md")||name.endsWith(".csv")) return (await file.text()).slice(0,30000);
+  if(file.type==="application/pdf"||name.endsWith(".pdf")){
+    if(!window.pdfjsLib) throw new Error("مكتبة PDF غير متاحة؛ تحقق من الإنترنت.");
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise; const pages=[];
+    for(let n=1;n<=Math.min(pdf.numPages,40);n++){const page=await pdf.getPage(n);const c=await page.getTextContent();pages.push(c.items.map(x=>x.str).join(" "));}
+    return pages.join("\n").slice(0,30000);
+  }
+  if(name.endsWith(".docx")&&window.mammoth){const r=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return (r.value||"").slice(0,30000);}
+  return "";
+}
+function escapeHTML(value){return String(value).replace(/[&<>\"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+if(fileInput)fileInput.addEventListener("change",async(e)=>{
   const file=e.target.files[0];if(!file)return;
-  if(file.size>12*1024*1024){alert('الملف كبير جداً (الحد 12MB)');e.target.value='';return;}
+  if(file.size>12*1024*1024){alert("الملف كبير جداً (الحد 12MB)");e.target.value="";return;}
   try{
-    const base64=await fileToBase64(file);
-    const dtype = fileInput.getAttribute("data-type") || "";
-    if(file.type.startsWith("image/") || dtype==="image"){
-      const html=`<div>🖼️ ${file.name}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الصورة! يمكنك طلب تعديلها أو وصفها.","ai",true,"Alislamiah AI");
-    }else if(file.type.startsWith("video/") || dtype==="video"){
-      const html=`<div>🎥 ${file.name}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الفيديو!","ai",true,"Alislamiah AI");
+    const base64=await fileToBase64(file);let html="",extracted="";
+    if(file.type.startsWith("image/")){
+      html=`<div>🖼️ ${escapeHTML(file.name)}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" alt="الصورة المرفوعة">`;
+      if(window.Tesseract){
+        appendMessage("جارٍ قراءة النص في الصورة…","ai",false);
+        try{const ocr=await Tesseract.recognize(file,"ara+eng");extracted=(ocr.data?.text||"").trim();}catch(e){}
+        const pending=chatContainer.lastChild;if(pending&&pending.textContent.includes("جارٍ قراءة النص"))pending.remove();
+      }
+      if(!extracted)extracted="تعذر استخراج نص واضح من الصورة. قد تكون صورة غير نصية أو تحتاج إلى تحليل بصري متقدم.";
+    }else if(file.type.startsWith("video/")){
+      html=`<div>🎥 ${escapeHTML(file.name)}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
+      extracted="المرفق فيديو باسم "+file.name+"؛ لم يتم استخراج الكلام أو تحليل المشاهد تلقائياً.";
     }else if(file.type.startsWith("audio/")){
-      const html=`<div>🎵 ${file.name}</div><audio src="${base64}" controls style="width:100%;margin-top:8px"></audio>`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الملف الصوتي!","ai",true,"Alislamiah AI");
+      html=`<div>🎵 ${escapeHTML(file.name)}</div><audio src="${base64}" controls style="width:100%;margin-top:8px"></audio>`;
+      extracted="المرفق ملف صوتي باسم "+file.name+"؛ لم يتم تفريغ الصوت تلقائياً.";
     }else{
-      const sizeKB = Math.round(file.size/1024);
-      const html=`<div>📎 ${file.name}</div><div style="font-size:12px;color:#6b7280;margin-top:4px">نوع: ${file.type||"ملف"} — الحجم: ${sizeKB} KB</div>`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الملف: "+file.name,"ai",true,"Alislamiah AI");
+      extracted=await extractUploadedText(file);
+      html=`<div>📎 ${escapeHTML(file.name)}</div><div style="font-size:12px;color:#6b7280;margin-top:4px">الحجم: ${Math.round(file.size/1024)} KB</div>`;
+      if(extracted)html+=`<details style="margin-top:8px"><summary>عرض النص المستخرج</summary><pre style="white-space:pre-wrap;direction:auto;max-height:180px;overflow:auto">${escapeHTML(extracted.slice(0,3000))}</pre></details>`;
     }
-  }catch(err){alert('خطأ في الرفع: '+(err.message||''));}
-  e.target.value='';
+    appendMessage(file.name,"user",true,null,html);
+    const model=getCurrentModel();
+    if(model.id==="alislamiah"){
+      appendMessage("جارٍ إرسال السؤال والمرفق إلى Alislamiah AI…","ai",false);
+      const answer=await searchAlislamiahSelf("حلّل المرفق وأجب اعتماداً على محتواه: "+file.name,extracted);
+      const pending=chatContainer.lastChild;if(pending&&pending.textContent.includes("جارٍ إرسال السؤال"))pending.remove();
+      if(answer)appendMessage(answer,"ai",true,"Alislamiah AI");
+      else appendMessage("تم إرفاق الملف واستخراج النص الممكن، لكن chat.html لا يوفّر حالياً API قابلة للاستدعاء من هذه الصفحة. يلزم إضافة API أو دعم postMessage داخل مشروع Alislamiah AI لإرسال السؤال واستلام الرد.","ai",true,"تعذّر الاتصال بالنموذج");
+    }else{
+      appendMessage(extracted?"تمت قراءة المحتوى المتاح. أرسلت النص إلى مربع الكتابة؛ أضف طلبك ثم اضغط إرسال.":"تم إرفاق الملف، لكن نوعه لا يدعم استخراج النص في هذه النسخة.","ai",true,"معالجة الملف");
+      if(userInput)userInput.value="حلّل هذا المرفق وأجب اعتماداً على محتواه: "+file.name+"\n"+extracted.slice(0,12000);
+      updateSendIcon();
+    }
+  }catch(err){alert("تعذر قراءة الملف: "+(err.message||"خطأ غير معروف"));}
+  e.target.value="";
 });
 async function askTranslate(){const p=prompt("النص للترجمة (Eisen.translastor):");if(p){const to=prompt("إلى أي لغة؟ ar/en/fr/es (افتراضي: en)","en")||"en";const res=await fetchFromEisen(p,to);if(res){appendMessage(p,"user");appendMessage(res.text,"ai",true,res.source);}else{alert("تعذر جلب الترجمة من Eisen");}}}
 function askImageGen(){const p=prompt("وصف الصورة:");if(p)processMessage("صورة: "+p);}
@@ -733,9 +741,32 @@ async function searchGeminiReal(query){
   }catch(e){ return null; }
 }
 
-async function searchAlislamiahSelf(query){
-  // Alislamiah AI - ردود من النموذج نفسه - https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html
-  return null; // يستخدم قاعدة البيانات المحلية chatKnowledge
+const ALISLAMIAH_CHAT_URL = "https://mohamedmadoui5195.github.io/Alislamiah-AI/chat.html";
+
+/*
+  تنبيه تقني: chat.html صفحة واجهة وليست API. نحاول طلبها بصيغة JSON إن كان الموقع
+  يدعمها، لكن GitHub Pages لا يحوّل صفحة HTML تلقائياً إلى خدمة محادثة.
+*/
+async function requestAlislamiahPage(query, attachmentText=""){
+  const prompt = attachmentText ? query + "\\n\\nمحتوى الملف المستخرج:\\n" + attachmentText : query;
+  try{
+    const response = await fetch(ALISLAMIAH_CHAT_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({message:prompt, text:prompt, prompt})
+    });
+    const contentType = response.headers.get("content-type") || "";
+    if(response.ok && contentType.includes("application/json")){
+      const data = await response.json();
+      const answer = data.reply || data.answer || data.response || data.text ||
+        data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(answer) return String(answer);
+    }
+  }catch(e){}
+  return null;
+}
+async function searchAlislamiahSelf(query, attachmentText=""){
+  return await requestAlislamiahPage(query, attachmentText);
 }
 
 async function searchSourcesReal(query, count){
@@ -799,6 +830,16 @@ async function processMessage(text){
   incrementCount(model.id); updateLimitUI(); updateSendIcon();
   let reply=null, source=null;
   const lower = text.toLowerCase();
+  if(model.id === "alislamiah"){
+    appendMessage(t.searching,"ai",false);
+    const answer = await searchAlislamiahSelf(text);
+    const pending=chatContainer.lastChild;
+    if(pending && pending.textContent===t.searching) pending.remove();
+    if(answer) appendMessage(answer,"ai",true,"Alislamiah AI");
+    else appendMessage("تعذر الحصول على الرد من Alislamiah AI. الرابط الحالي chat.html صفحة ويب وليست API قابلة للاستدعاء من Gemalot. يجب إضافة واجهة API أو آلية postMessage داخل مشروع Alislamiah AI حتى يمكن تمرير السؤال واستلام الرد.", "ai",true,"اتصال Alislamiah AI");
+    if(lastVoiceInput){ if(answer) speakText(answer); lastVoiceInput=false; }
+    return;
+  }
   const isCoding = /كود|برمجة|html|css|js|python|function/.test(lower);
   if(!isCoding){
     for(const item of chatKnowledge){
