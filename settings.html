@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings - Gemalot</title>
+<style>
 @font-face {
   font-family: "Optimistic";
   font-style: normal;
@@ -21,11 +25,8 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Settings - Gemalot</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+
+*{margin:0;padding:0;box-sizing:border-box}
 body{background:#0b0f19;color:#fff;min-height:100vh;padding:20px}
 .header{display:flex;align-items:center;gap:12px;margin-bottom:30px}
 .back-btn{width:40px;height:40px;border:none;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer}
@@ -45,6 +46,7 @@ body{background:#0b0f19;color:#fff;min-height:100vh;padding:20px}
 </style>
 </head>
 <body>
+
 <div class="header">
   <button class="back-btn" onclick="location.href='index.html'">←</button>
   <h1 id="title">الإعدادات</h1>
@@ -61,10 +63,9 @@ body{background:#0b0f19;color:#fff;min-height:100vh;padding:20px}
 
 <div class="card">
   <h3>🔐 الحساب</h3>
-  <button class="btn" onclick="location.href='https://Alislamiah.github.io/Alislamiah-AI/saved.passwords.html'">Alislamiah password manager 🔑</button>
+  <button class="btn" onclick="location.href='https://Alislamiah.github.io/Alislamiah-AI/saved.passwords.html'">🔑 Alislamiah password manager</button>
   <div class="small" id="accountHint" style="font-size:11px;color:#9ca3af;margin-top:8px">إدارة كلمات المرور وبيانات تسجيل الدخول</div>
   
-  <!-- أزرار تسجيل الخروج وحذف الحساب المضافة حديثاً -->
   <button class="btn secondary" id="signOutBtn" onclick="signOut()" style="margin-top: 14px;">تسجيل الخروج (Sign Out)</button>
   <button class="btn danger" id="deleteAccBtn" onclick="deleteAccount()" style="margin-top: 8px;">حذف الحساب (Delete Account)</button>
 </div>
@@ -141,7 +142,6 @@ function applyLang(lang){
   });
 }
 
-// دالة تسجيل الخروج
 function signOut() {
   const lang = localStorage.getItem('gemalot_lang') || 'ar';
   const t = texts[lang] || texts.ar;
@@ -151,7 +151,6 @@ function signOut() {
   }
 }
 
-// دالة حذف الحساب (تحذف الجلسة وكلمات المرور المحفوظة الخاصة بالحساب أو النظام بناءً على الرغبة)
 function deleteAccount() {
   const lang = localStorage.getItem('gemalot_lang') || 'ar';
   const t = texts[lang] || texts.ar;
