@@ -451,7 +451,7 @@ async function fetchFromEisen(text, targetLang){
         let t = data.responseData.translatedText;
         if(t.includes("PLEASE SELECT") || t.includes("TWO DISTINCT")) return null;
         if(t.toLowerCase() !== text.toLowerCase() && t.length>0 && t.length<1000){
-          return {text: t, source: `Eisen.translastor (${src}→${to}) - https://mohamedmadoui5195.github.io/Eisen.translastor/`};
+          return {text: t, source: `Eisen.translastor (${src}→${to}) - https://Alislamiah.github.io/Eisen.translastor/`};
         }
       }
     }
