@@ -141,7 +141,6 @@ h1{font-size:24px;margin-bottom:6px}
         email: user.email
       });
 
-      // تجهيز البيانات لإظهار نافذة الحفظ الخاصة بـ Alislamiah Password Manager
       tempData = { name, email: user.email, password };
       document.getElementById("saveModal").classList.add("show");
 
@@ -159,17 +158,26 @@ h1{font-size:24px;margin-bottom:6px}
     if (!tempData) return;
 
     let saved = JSON.parse(localStorage.getItem("alislamiah_saved_passwords") || "[]");
-    const exists = saved.find(s => s.email === tempData.email);
+    
+    // التحقق بناءً على البريد واسم الموقع لعدم التكرار
+    const existsIndex = saved.findIndex(s => s.email === tempData.email && s.site === "Gemalot");
 
-    if (!exists) {
-      saved.push({
-        name: tempData.name,
-        email: tempData.email,
-        password: tempData.password,
-        savedAt: new Date().toISOString()
-      });
-      localStorage.setItem("alislamiah_saved_passwords", JSON.stringify(saved));
+    const entry = {
+      id: Date.now(),
+      name: tempData.name,
+      email: tempData.email,
+      password: tempData.password,
+      site: "Gemalot",
+      savedAt: new Date().toISOString()
+    };
+
+    if (existsIndex >= 0) {
+      saved[existsIndex] = entry;
+    } else {
+      saved.unshift(entry);
     }
+
+    localStorage.setItem("alislamiah_saved_passwords", JSON.stringify(saved));
 
     document.getElementById("saveModal").classList.remove("show");
     window.location.href = "index.html";
