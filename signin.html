@@ -169,17 +169,26 @@ h1{font-size:24px;margin-bottom:6px}
     if (!tempData) return;
 
     let saved = JSON.parse(localStorage.getItem("alislamiah_saved_passwords") || "[]");
-    const exists = saved.find(s => s.email === tempData.email);
+    
+    // التحقق بناءً على البريد واسم الموقع لعدم التكرار
+    const existsIndex = saved.findIndex(s => s.email === tempData.email && s.site === "Gemalot");
 
-    if (!exists) {
-      saved.push({
-        name: tempData.name,
-        email: tempData.email,
-        password: tempData.password,
-        savedAt: new Date().toISOString()
-      });
-      localStorage.setItem("alislamiah_saved_passwords", JSON.stringify(saved));
+    const entry = {
+      id: Date.now(),
+      name: tempData.name,
+      email: tempData.email,
+      password: tempData.password,
+      site: "Gemalot",
+      savedAt: new Date().toISOString()
+    };
+
+    if (existsIndex >= 0) {
+      saved[existsIndex] = entry;
+    } else {
+      saved.unshift(entry);
     }
+
+    localStorage.setItem("alislamiah_saved_passwords", JSON.stringify(saved));
 
     document.getElementById("saveModal").classList.remove("show");
     window.location.href = "index.html";
@@ -195,7 +204,7 @@ h1{font-size:24px;margin-bottom:6px}
     if (currentUserRaw) {
       window.location.href = "index.html";
     } else {
-      window.location.href = "https://mohamedmadoui5195.github.io/Alislamia-AI/signin.html";
+      window.location.href = "https://mohamedmadoui5195.github.io/Alislamiah-AI/signin.html";
     }
   }
 
