@@ -67,11 +67,10 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 .message.blocked{background:#7f1d1d;color:#fff;margin:0 auto;max-width:95%;text-align:center;border-radius:12px}
 .source-tag{font-size:9px;color:#6b7280;margin-top:7px;display:block;border-top:1px solid #e5e7eb;padding-top:5px}
 
-/* اقتراحات */
-.suggestions{position:fixed;bottom:88px;left:0;width:100%;display:flex;gap:8px;padding:8px 12px;overflow-x:auto;background:transparent;z-index:999;scrollbar-width:none;direction:rtl}
-.suggestions::-webkit-scrollbar{display:none}
-.sug-btn{flex-shrink:0;padding:9px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.09);color:#e5e7eb;font-size:11px;font-weight:600;cursor:pointer;backdrop-filter:blur(8px);transition:.25s}
-.sug-btn:hover{background:rgba(250,204,21,.18);border-color:#facc15;transform:translateY(-2px);box-shadow:0 3px 10px rgba(250,204,21,.2)}
+/* اقتراحات - حبوب عمودية */
+.suggestions{position:fixed;bottom:100px;left:0;right:0;max-width:800px;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:8px 16px;background:transparent;z-index:999;direction:rtl;pointer-events:none}
+.suggestions .sug-btn{pointer-events:auto;display:inline-block;width:auto;padding:11px 18px;border-radius:999px;border:none;background:rgba(255,255,255,.14);color:#f3f4f6;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:blur(8px);transition:.2s;text-align:right}
+.suggestions .sug-btn:hover{background:rgba(250,204,21,.25);color:#fff;transform:translateY(-1px)}
 
 /* شريط الكتابة - تأثيرات الألوان */
 .input-area{position:fixed;bottom:0;left:0;width:100%;padding:10px 12px 14px;background:linear-gradient(to top,#0b0f19 85%,transparent);z-index:1000}
@@ -107,6 +106,12 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 .edit-tools{display:flex;flex-wrap:wrap;gap:7px}
 .edit-tools button{padding:7px 11px;border-radius:9px;border:1px solid #374151;background:#1f2937;color:#fff;font-size:11px;cursor:pointer;transition:.2s}
 .edit-tools button:hover{background:#374151;transform:translateY(-1px)}
+
+.msg-actions{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.msg-actions button{background:rgba(0,0,0,.06);border:none;border-radius:10px;width:34px;height:34px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:.2s;color:#374151}
+.msg-actions button:hover{background:rgba(250,204,21,.25);transform:scale(1.08)}
+.msg-actions button.copied{background:#22c55e;color:#fff}
+.ai-disclaimer{font-size:10px;color:#9ca3af;margin-top:8px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -188,7 +193,11 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
   </div>
 </div>
 
-<div id="suggestionsBar" class="suggestions"></div>
+<div id="suggestionsBar" class="suggestions">
+<button type="button" class="sug-btn" onclick="insertSuggestion(&quot;شرح درس&quot;)">شرح درس</button>
+<button type="button" class="sug-btn" onclick="insertSuggestion(&quot;وصفة طبخ&quot;)">وصفة طبخ</button>
+<button type="button" class="sug-btn" onclick="insertSuggestion(&quot;ترجمة عبارة&quot;)">ترجمة عبارة</button>
+</div>
 
 <div class="tools-popup" id="toolsPopup">
   <button onclick="triggerUpload('image');closeTools()"><span>🖼️</span> رفع صورة وتعديلها</button>
@@ -246,7 +255,7 @@ function getCurrentModel(){
 }
 
 const translations={
-  ar:{dir:"rtl",welcome:"كيف يمكنني مساعدتك؟",placeholder:"اسأل Gemalot",newChat:"+ محادثة جديدة",prevChats:"المحادثات السابقة",suggestions:["أنشئ صورة: مسجد مستقبلي","أنشئ فيديو: محيط","حل المعادلة: 2x+3=11","نواقض الوضوء","أحكام الصيام"],noAnswer:"عذراً، لم أجد إجابة دقيقة.",searching:"جاري البحث...",blockedTitle:"انتهت رسائلك",remaining:"متبقي: {n}/{t} اليوم"},
+  ar:{dir:"rtl",welcome:"كيف يمكنني مساعدتك؟",placeholder:"اسأل Gemalot",newChat:"+ محادثة جديدة",prevChats:"المحادثات السابقة",suggestions:["شرح درس","وصفة طبخ","ترجمة عبارة"],noAnswer:"عذراً، لم أجد إجابة دقيقة.",searching:"جاري البحث...",blockedTitle:"انتهت رسائلك",remaining:"متبقي: {n}/{t} اليوم"},
   fr:{dir:"ltr",welcome:"Comment puis-je vous aider ?",placeholder:"Ask Gemalot",newChat:"+ Nouveau chat",prevChats:"Conversations",suggestions:["générer image: mosquée","résoudre: 2x+3=11"],noAnswer:"Désolé, pas de réponse exacte.",searching:"Recherche...",blockedTitle:"Limite atteinte",remaining:"Restant: {n}/{t}"},
   en:{dir:"ltr",welcome:"How can I help you?",placeholder:"Ask Gemalot",newChat:"+ New Chat",prevChats:"Previous",suggestions:["generate image: futuristic mosque","solve: 2x+3=11"],noAnswer:"No exact answer.",searching:"Searching...",blockedTitle:"Limit reached",remaining:"Remaining: {n}/{t}"}
 };
@@ -275,13 +284,15 @@ function getBlockUntil(){return parseInt(localStorage.getItem("gemalot_block_unt
 function canSendMessage(){checkAndResetDaily();if(isSubscribed())return {allowed:true};const b=getBlockUntil();if(b&&Date.now()<b)return {allowed:false};const c=parseInt(localStorage.getItem("gemalot_daily_count")||"0");if(c>=getDailyLimit())return {allowed:false};return {allowed:true};}
 function incrementCount(){if(isSubscribed())return;let c=parseInt(localStorage.getItem("gemalot_daily_count")||"0");c++;localStorage.setItem("gemalot_daily_count",c.toString());}
 function applyLanguage(lang){currentLang=lang;t=translations[lang]||translations.ar;localStorage.setItem("gemalot_language",lang);document.documentElement.lang=lang;document.documentElement.dir=t.dir;const wt=document.getElementById("welcomeText");if(wt)wt.textContent=t.welcome;updatePlaceholder();updateLimitUI();renderSuggestions();}
-function renderSuggestions(){const bar=document.getElementById("suggestionsBar");if(!bar)return;bar.innerHTML="";(t.suggestions||[]).forEach(s=>{const b=document.createElement("button");b.className="sug-btn";b.textContent=s;b.onclick=()=>sendSuggestion(s);bar.appendChild(b);});}
+function renderSuggestions(){const bar=document.getElementById("suggestionsBar");if(!bar)return;const model=(typeof getCurrentModel==="function"?getCurrentModel():"normal");if(model==="alislamiah"){bar.style.display="none";return;}bar.style.display="flex";bar.innerHTML="";(t.suggestions||["شرح درس","وصفة طبخ","ترجمة عبارة"]).forEach(s=>{const b=document.createElement("button");b.type="button";b.className="sug-btn";b.textContent=s;b.onclick=()=>insertSuggestion(s);bar.appendChild(b);});}
+function insertSuggestion(txt){const inp=document.getElementById("userInput");if(!inp)return;let fullText=txt+": ";if(txt==="شرح درس")fullText="شرح درس: ";else if(txt==="وصفة طبخ")fullText="وصفة طبخ: ";else if(txt==="ترجمة عبارة")fullText="ترجمة عبارة: ";inp.value=fullText;inp.focus();inp.setSelectionRange(fullText.length,fullText.length);if(typeof updateSendIcon==="function")updateSendIcon();if(typeof triggerFullGlow==="function")triggerFullGlow();}
+window.insertSuggestion=insertSuggestion;
 function triggerFullGlow(){const g=document.getElementById("fullGlow");if(!g)return;g.classList.remove("active");void g.offsetWidth;g.classList.add("active");}
 function getChats(){return JSON.parse(localStorage.getItem("gemalot_chats")||"[]");}
 function saveChats(c){localStorage.setItem("gemalot_chats",JSON.stringify(c));}
 function renderChatList(){const cl=document.getElementById("chatList");if(!cl)return;cl.innerHTML="";getChats().forEach(c=>{const div=document.createElement("div");div.className="chat-item";div.innerHTML=`<span class="chat-title">${c.title||"محادثة"}</span><button class="delete-btn">🗑️</button>`;div.querySelector('.chat-title').onclick=()=>loadChat(c.id);div.querySelector('.delete-btn').onclick=e=>{e.stopPropagation();deleteChat(c.id);};cl.appendChild(div);});}
 function deleteChat(id){saveChats(getChats().filter(c=>c.id!==id));if(currentChatId===id)newChat();renderChatList();}
-function newChat(){currentChatId=Date.now().toString();messages=[];const cc=document.getElementById("chatContainer");if(cc)cc.innerHTML=`<div id="welcomeBox" class="welcome-box"><h1>Gemalot</h1><div class="line"></div><p id="welcomeText">${t.welcome}</p><div class="limit-info" id="limitInfo"></div></div>`;const sb=document.getElementById("sidebar");if(sb)sb.classList.remove("open");updateLimitUI();renderSuggestions();}
+function newChat(){currentChatId=Date.now().toString();messages=[];const cc=document.getElementById("chatContainer");if(cc)cc.innerHTML=`<div id="welcomeBox" class="welcome-box"><h1>Gemalot</h1><div class="line"></div><p id="welcomeText">${t.welcome}</p><div class="limit-info" id="limitInfo"></div></div>`;const sb=document.getElementById("sidebar");if(sb)sb.classList.remove("open");updateLimitUI();renderSuggestions();const sug=document.getElementById("suggestionsBar");if(sug)sug.style.display="flex";}
 function loadChat(id){const chat=getChats().find(c=>c.id===id);if(!chat)return;currentChatId=id;messages=chat.messages||[];const cc=document.getElementById("chatContainer");if(!cc)return;cc.innerHTML="";messages.forEach(m=>appendMessage(m.text,m.sender,false,m.source,m.html));const sb=document.getElementById("sidebar");if(sb)sb.classList.remove("open");}
 function saveCurrentChat(){if(!messages.length)return;const chats=getChats();const title=messages[0]?.text?.slice(0,30)||"محادثة";const data={id:currentChatId||Date.now().toString(),title,messages,updated:Date.now()};const i=chats.findIndex(c=>c.id===currentChatId);if(i>-1)chats[i]=data;else chats.unshift(data);saveChats(chats);renderChatList();}
 
@@ -319,7 +330,7 @@ function applyModelUI(model){
     if(sug) sug.style.display = 'none';
     if(plus){ plus.style.opacity = '0.4'; plus.style.pointerEvents = 'none'; }
   } else {
-    if(sug) sug.style.display = '';
+    if(sug) sug.style.display = 'flex';
     if(plus){ plus.style.opacity = '1'; plus.style.pointerEvents = ''; }
   }
   updateLimitUI();
@@ -380,8 +391,24 @@ function appendMessage(text,sender,save=true,source,htmlContent){
   if(htmlContent){div.innerHTML=htmlContent;}
   else if(sender==="blocked"){div.innerHTML=text;}
   else{const span=document.createElement("span");span.textContent=text;div.appendChild(span);if(source){const tag=document.createElement("span");tag.className="source-tag";tag.textContent=`المصدر: ${source}`;div.appendChild(document.createElement("br"));div.appendChild(tag);}}
-  chatContainer.appendChild(div);window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+  if(sender==="ai"){
+    const actions=document.createElement("div");actions.className="msg-actions";
+    const plain=(text||"").toString().replace(/<[^>]*>/g,"");
+    const b1=document.createElement("button");b1.type="button";b1.title="استماع";b1.textContent="🔊";
+    b1.onclick=function(e){e.stopPropagation();if(typeof speakText==="function")speakText(plain||div.innerText);};
+    const b2=document.createElement("button");b2.type="button";b2.title="نسخ";b2.textContent="📋";
+    b2.onclick=function(e){e.stopPropagation();const t=plain||div.innerText||"";const done=()=>{b2.textContent="✓";b2.classList.add("copied");setTimeout(()=>{b2.textContent="📋";b2.classList.remove("copied");},1200);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>{});}else{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(err){}document.body.removeChild(ta);done();}};
+    const b3=document.createElement("button");b3.type="button";b3.title="أعجبني";b3.textContent="👍";
+    const b4=document.createElement("button");b4.type="button";b4.title="لم يعجبني";b4.textContent="👎";
+    b3.onclick=function(e){e.stopPropagation();b3.style.background="rgba(34,197,94,.35)";b4.style.opacity=".4";};
+    b4.onclick=function(e){e.stopPropagation();b4.style.background="rgba(239,68,68,.3)";b3.style.opacity=".4";};
+    actions.appendChild(b1);actions.appendChild(b2);actions.appendChild(b3);actions.appendChild(b4);
+    div.appendChild(actions);
+    const disc=document.createElement("div");disc.className="ai-disclaimer";disc.textContent="Gemalot is an AI and it may make mistakes";div.appendChild(disc);
+  }
+  if(chatContainer)chatContainer.appendChild(div);window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
   if(save&&sender!=="blocked"){messages.push({text,sender,source,html:htmlContent||null});if(!currentChatId)currentChatId=Date.now().toString();saveCurrentChat();}
+  const sug=document.getElementById("suggestionsBar");if(sug&&messages.length>0)sug.style.display="none";
 }
 function triggerUpload(type){if(!fileInput)return;fileInput.setAttribute("data-type",type);fileInput.accept=type==="image"?"image/*":"video/*";fileInput.click();}
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
@@ -717,8 +744,8 @@ async function processMessage(text){
   }
 }
 function sendSuggestion(txt){processMessage(txt);}
-function toggleTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.toggle('open');}
-function closeTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.remove('open');}
+function toggleTools(){const pop=document.getElementById('toolsPopup');if(!pop)return;pop.classList.toggle('open');const sug=document.getElementById('suggestionsBar');if(sug){if(pop.classList.contains('open'))sug.style.display='none';else if((typeof getCurrentModel==='function'?getCurrentModel():'normal')!=='alislamiah')sug.style.display='flex';}}
+function closeTools(){const pop=document.getElementById('toolsPopup');if(pop)pop.classList.remove('open');const sug=document.getElementById('suggestionsBar');if(sug&&(typeof getCurrentModel==='function'?getCurrentModel():'normal')!=='alislamiah')sug.style.display='flex';}
 document.addEventListener('click',e=>{const pop=document.getElementById('toolsPopup');const plus=document.getElementById('plusBtn');if(pop&&plus&&!pop.contains(e.target)&&e.target!==plus)pop.classList.remove('open');});
 function updateSendIcon(){
   const val=userInput.value.trim();
