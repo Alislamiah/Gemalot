@@ -107,11 +107,13 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
 .edit-tools button{padding:7px 11px;border-radius:9px;border:1px solid #374151;background:#1f2937;color:#fff;font-size:11px;cursor:pointer;transition:.2s}
 .edit-tools button:hover{background:#374151;transform:translateY(-1px)}
 
-.msg-actions{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
-.msg-actions button{background:rgba(0,0,0,.06);border:none;border-radius:10px;width:34px;height:34px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:.2s;color:#374151}
-.msg-actions button:hover{background:rgba(250,204,21,.25);transform:scale(1.08)}
+.msg-wrap{display:flex;flex-direction:column;align-items:flex-end;margin:9px 0;max-width:86%;margin-left:auto}
+.msg-wrap .message{margin:0;max-width:100%}
+.msg-actions{display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 4px;flex-wrap:wrap}
+.msg-actions button{background:rgba(255,255,255,.08);border:none;border-radius:10px;width:34px;height:34px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:.2s;color:#e5e7eb}
+.msg-actions button:hover{background:rgba(250,204,21,.25);color:#fff;transform:scale(1.08)}
 .msg-actions button.copied{background:#22c55e;color:#fff}
-.ai-disclaimer{font-size:10px;color:#9ca3af;margin-top:8px;line-height:1.4}
+.ai-disclaimer{font-size:10px;color:#6b7280;margin-top:4px;padding:0 4px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -217,7 +219,7 @@ body{background:#0b0f19;color:#fff;font-family:Arial,sans-serif;min-height:100vh
   </div>
 </div>
 
-<input type="file" id="fileInput" hidden accept="image/*,video/*">
+<input type="file" id="fileInput" hidden accept="image/*,video/*,.txt,.js,.ts,.py,.html,.css,.json,.md,.java,.c,.cpp">
 <div id="fullGlow" class="full-glow"></div>
 <div id="editModal" class="edit-modal"><div class="edit-box"><h3 style="color:#facc15;font-size:14px">محرر احترافي</h3><canvas id="editCanvas"></canvas><div class="edit-tools"><button onclick="applyFilter('grayscale')">أبيض وأسود</button><button onclick="applyFilter('sepia')">Sepia</button><button onclick="applyFilter('invert')">عكسي</button><button onclick="applyFilter('bright')">تفتيح</button><button onclick="rotateCanvas(90)">دوران</button><button onclick="addTextOverlay()">نص</button><button onclick="downloadCanvas()">تحميل</button><button onclick="closeEditor()">إغلاق</button></div></div></div>
 
@@ -250,6 +252,78 @@ async function askAlislamiahGemini(userText){
   }
   throw lastError || new Error("تعذر الاتصال بـ Alislamiah AI");
 }
+
+async function analyzeImageWithGemini(base64DataUrl, userQuestion){
+  const pure = (base64DataUrl.split(",")[1] || base64DataUrl);
+  const mime = (base64DataUrl.match(/^data:([^;]+);/) || [])[1] || "image/jpeg";
+  const prompt = userQuestion || "صف هذه الصورة بالتفصيل بالعربية: المحتوى والعناصر والألوان وأي نصوص ظاهرة.";
+  const body = {
+    contents: [{ role: "user", parts: [
+      { text: prompt },
+      { inline_data: { mime_type: mime, data: pure } }
+    ]}],
+    generationConfig: { temperature: 0.3, maxOutputTokens: 1200 }
+  };
+  let lastError = null;
+  const models = ["gemini-2.5-flash","gemini-1.5-flash","gemini-flash-latest","gemini-1.5-pro","gemini-pro-vision"];
+  for (const model of models) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) { lastError = new Error(model+" "+res.status); continue; }
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text.trim();
+    } catch(e){ lastError = e; continue; }
+  }
+  throw lastError || new Error("تعذر تحليل الصورة");
+}
+function extractVideoFrame(videoDataUrl){
+  return new Promise((resolve, reject) => {
+    const v = document.createElement("video");
+    v.crossOrigin = "anonymous";
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    v.src = videoDataUrl;
+    const fail = (e) => reject(e || new Error("video frame failed"));
+    const timeout = setTimeout(() => fail(new Error("timeout")), 10000);
+    v.onloadeddata = () => {
+      try { v.currentTime = Math.min(0.8, (v.duration || 2) / 5); } catch(e) { clearTimeout(timeout); fail(e); }
+    };
+    v.onseeked = () => {
+      try {
+        const c = document.createElement("canvas");
+        c.width = v.videoWidth || 640;
+        c.height = v.videoHeight || 360;
+        c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+        clearTimeout(timeout);
+        resolve(c.toDataURL("image/jpeg", 0.85));
+      } catch(e) { clearTimeout(timeout); fail(e); }
+    };
+    v.onerror = () => { clearTimeout(timeout); fail(); };
+  });
+}
+async function askCodeGemini(userText){
+  const systemPrompt = "أنت مهندس برمجيات خبير. أجب بالعربية إن كان السؤال بالعربية. قدّم كوداً نظيفاً جاهزاً للتشغيل، مع شرح مختصر للأخطاء والتصحيحات. استخدم كتل كود واضحة.";
+  const body = {
+    contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nطلب المستخدم:\n" + userText }] }],
+    generationConfig: { temperature: 0.25, maxOutputTokens: 2048 }
+  };
+  let lastError = null;
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) { lastError = new Error(model+" "+res.status); continue; }
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text.trim();
+    } catch(e){ lastError = e; continue; }
+  }
+  throw lastError || new Error("تعذر توليد الكود");
+}
+
 function getCurrentModel(){
   try { return localStorage.getItem('gemalot_current_model') || 'normal'; } catch(e){ return 'normal'; }
 }
@@ -391,22 +465,56 @@ function appendMessage(text,sender,save=true,source,htmlContent){
   if(htmlContent){div.innerHTML=htmlContent;}
   else if(sender==="blocked"){div.innerHTML=text;}
   else{const span=document.createElement("span");span.textContent=text;div.appendChild(span);if(source){const tag=document.createElement("span");tag.className="source-tag";tag.textContent=`المصدر: ${source}`;div.appendChild(document.createElement("br"));div.appendChild(tag);}}
-  if(sender==="ai"){
+  // أزرار فقط للرد النهائي (save=true) وليس "جاري البحث..."
+  const isLoading = !save || (typeof text==="string" && (text.indexOf("جاري")===0 || text===((typeof t!=="undefined"&&t.searching)?t.searching:"")));
+  if(sender==="ai" && !isLoading){
+    const wrap=document.createElement("div");
+    wrap.className="msg-wrap";
+    wrap.appendChild(div);
     const actions=document.createElement("div");actions.className="msg-actions";
-    const plain=(text||"").toString().replace(/<[^>]*>/g,"");
+    const getPlain=function(){
+      if(text && !htmlContent) return String(text);
+      return (div.innerText||"").replace(/\s*المصدر:.*$/,"").trim();
+    };
     const b1=document.createElement("button");b1.type="button";b1.title="استماع";b1.textContent="🔊";
-    b1.onclick=function(e){e.stopPropagation();if(typeof speakText==="function")speakText(plain||div.innerText);};
+    b1.onclick=function(e){e.stopPropagation();if(typeof speakText==="function")speakText(getPlain());};
     const b2=document.createElement("button");b2.type="button";b2.title="نسخ";b2.textContent="📋";
-    b2.onclick=function(e){e.stopPropagation();const t=plain||div.innerText||"";const done=()=>{b2.textContent="✓";b2.classList.add("copied");setTimeout(()=>{b2.textContent="📋";b2.classList.remove("copied");},1200);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>{});}else{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(err){}document.body.removeChild(ta);done();}};
+    b2.onclick=function(e){
+      e.stopPropagation();
+      const t=getPlain();
+      function ok(){b2.textContent="✓";b2.classList.add("copied");setTimeout(function(){b2.textContent="📋";b2.classList.remove("copied");},1200);}
+      function failCopy(){
+        try{
+          const ta=document.createElement("textarea");
+          ta.value=t;
+          ta.setAttribute("readonly","");
+          ta.style.position="fixed";ta.style.top="0";ta.style.left="0";ta.style.opacity="0";
+          document.body.appendChild(ta);
+          ta.focus();ta.select();ta.setSelectionRange(0,t.length);
+          const successful=document.execCommand("copy");
+          document.body.removeChild(ta);
+          if(successful) ok(); else alert("تعذر النسخ");
+        }catch(err){alert("تعذر النسخ");}
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(ok).catch(failCopy);
+      } else {
+        failCopy();
+      }
+    };
     const b3=document.createElement("button");b3.type="button";b3.title="أعجبني";b3.textContent="👍";
     const b4=document.createElement("button");b4.type="button";b4.title="لم يعجبني";b4.textContent="👎";
     b3.onclick=function(e){e.stopPropagation();b3.style.background="rgba(34,197,94,.35)";b4.style.opacity=".4";};
     b4.onclick=function(e){e.stopPropagation();b4.style.background="rgba(239,68,68,.3)";b3.style.opacity=".4";};
     actions.appendChild(b1);actions.appendChild(b2);actions.appendChild(b3);actions.appendChild(b4);
-    div.appendChild(actions);
-    const disc=document.createElement("div");disc.className="ai-disclaimer";disc.textContent="Gemalot is an AI and it may make mistakes";div.appendChild(disc);
+    wrap.appendChild(actions);
+    const disc=document.createElement("div");disc.className="ai-disclaimer";disc.textContent="Gemalot is an AI and it may make mistakes";
+    wrap.appendChild(disc);
+    if(chatContainer)chatContainer.appendChild(wrap);
+  } else {
+    if(chatContainer)chatContainer.appendChild(div);
   }
-  if(chatContainer)chatContainer.appendChild(div);window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
   if(save&&sender!=="blocked"){messages.push({text,sender,source,html:htmlContent||null});if(!currentChatId)currentChatId=Date.now().toString();saveCurrentChat();}
   const sug=document.getElementById("suggestionsBar");if(sug&&messages.length>0)sug.style.display="none";
 }
@@ -414,27 +522,124 @@ function triggerUpload(type){if(!fileInput)return;fileInput.setAttribute("data-t
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
 if(fileInput)fileInput.addEventListener("change", async (e)=>{
   const file=e.target.files[0];if(!file)return;
-  if(file.size>8*1024*1024){alert('الملف كبير');e.target.value='';return;}
+  if(file.size>12*1024*1024){alert("الملف كبير (الحد 12MB)");e.target.value="";return;}
   try{
-    const base64=await fileToBase64(file);
+    triggerFullGlow();
     if(file.type.startsWith("image/")){
-      const html=`<div>🖼️ ${file.name}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الصورة!","ai",true,"محلي");
-    }else{
-      const html=`<div>🎥 ${file.name}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
-      appendMessage(file.name,"user",true,null,html);
-      appendMessage("✅ تم رفع الفيديو!","ai",true,"محلي");
+      const base64=await fileToBase64(file);
+      const htmlImg=`<div>🖼️ ${file.name}</div><img src="${base64}" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`;
+      appendMessage(file.name,"user",true,null,htmlImg);
+      appendMessage("🔍 جاري تحليل محتوى الصورة...","ai",false);
+      try{
+        const analysis=await analyzeImageWithGemini(base64,"حلّل هذه الصورة بالتفصيل بالعربية الفصحى: ماذا تحتوي؟ العناصر، الأشخاص، النصوص الظاهرة، الألوان، والسياق.");
+        const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري تحليل")>=0)last.remove();
+        appendMessage(analysis,"ai",true,"تحليل صورة - Gemini Vision");
+      }catch(err){
+        const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري تحليل")>=0)last.remove();
+        appendMessage("✅ تم رفع الصورة. تعذر التحليل التلقائي حالياً. يمكنك فتح المحرر بالضغط على الصورة.","ai",true,"محلي");
+      }
+    } else if(file.type.startsWith("video/")){
+      const base64=await fileToBase64(file);
+      const htmlVid=`<div>🎥 ${file.name}</div><video src="${base64}" controls style="max-width:100%;border-radius:12px"></video>`;
+      appendMessage(file.name,"user",true,null,htmlVid);
+      appendMessage("🔍 جاري قراءة إطار من الفيديو وتحليله...","ai",false);
+      try{
+        const frame=await extractVideoFrame(base64);
+        const analysis=await analyzeImageWithGemini(frame,"هذا إطار مستخرج من فيديو. صف ما يظهر بالتفصيل بالعربية، واستنتج موضوع الفيديو إن أمكن.");
+        const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري")>=0)last.remove();
+        appendMessage(analysis,"ai",true,"تحليل فيديو - إطار + Gemini");
+      }catch(err){
+        const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري")>=0)last.remove();
+        appendMessage("✅ تم رفع الفيديو. يمكنك مشاهدته أعلاه. تعذر استخراج إطار للتحليل.","ai",true,"محلي");
+      }
+    } else {
+      // ملفات نصية / كود
+      const textContent = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||""));r.onerror=rej;r.readAsText(file);});
+      const preview = textContent.slice(0,4000);
+      appendMessage("📄 "+file.name,"user",true,null,`<div>📄 ${file.name}</div><pre style="white-space:pre-wrap;font-size:12px;max-height:180px;overflow:auto;background:#f3f4f6;padding:8px;border-radius:8px;margin-top:6px">${preview.replace(/</g,"&lt;")}</pre>`);
+      appendMessage("جاري فهم محتوى الملف...","ai",false);
+      try{
+        const reply = await askCodeGemini("هذا محتوى ملف باسم "+file.name+" اقرأه ولخصه وإن كان كودا اشرح وظيفته واقترح تحسينات:\n\n"+preview);
+        const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري فهم")>=0)last.remove();
+        appendMessage(reply,"ai",true,"تحليل ملف - Gemini");
+      }catch(err){
+        const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري فهم")>=0)last.remove();
+appendMessage("تم رفع الملف. هذا جزء من محتواه:\n"+preview.slice(0,800),"ai",true,"محلي");
+      }
     }
-  }catch{alert('خطأ في الرفع');}
-  e.target.value='';
+  }catch(err){alert("خطأ في الرفع");}
+  e.target.value="";
 });
 async function askTranslate(){const p=prompt("النص للترجمة (Eisen.translastor):");if(p){const to=prompt("إلى أي لغة؟ ar/en/fr/es (افتراضي: en)","en")||"en";const res=await fetchFromEisen(p,to);if(res){appendMessage(p,"user");appendMessage(res.text,"ai",true,res.source);}else{alert("تعذر جلب الترجمة من Eisen");}}}
 function askImageGen(){const p=prompt("وصف الصورة:");if(p)processMessage("صورة: "+p);}
 function askVideoGen(){const p=prompt("وصف الفيديو:");if(p)processMessage("فيديو: "+p);}
 function insertPrompt(txt){if(!userInput)return;userInput.value=txt;userInput.focus();updateSendIcon();}
-function generateImagePollinations(prompt){const seed=Math.floor(Math.random()*100000);const enc=encodeURIComponent(prompt+", ultra detailed, 4k");return `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&seed=${seed}&nologo=true`;}
-function generateVideoCanvas(prompt){const canvas=document.createElement("canvas");canvas.width=640;canvas.height=360;const ctx=canvas.getContext("2d");let frame=0;return new Promise(resolve=>{const stream=canvas.captureStream(30);const recorder=new MediaRecorder(stream,{mimeType:"video/webm"});const chunks=[];recorder.ondataavailable=e=>chunks.push(e.data);recorder.onstop=()=>{const blob=new Blob(chunks,{type:"video/webm"});resolve(URL.createObjectURL(blob));};recorder.start();function draw(){ctx.fillStyle=`hsl(${(frame*2)%360},70%,30%)`;ctx.fillRect(0,0,640,360);ctx.fillStyle="#fff";ctx.font="bold 24px Arial";ctx.textAlign="center";ctx.fillText(prompt.slice(0,40),320,180);frame++;if(frame<60){requestAnimationFrame(draw);}else{setTimeout(()=>recorder.stop(),200);}}draw();});}
+function generateImagePollinations(prompt){
+  const seed=Math.floor(Math.random()*1000000);
+  const enhanced=(prompt||"cinematic scene")+", ultra detailed, photorealistic, 4k, professional lighting, high quality";
+  const enc=encodeURIComponent(enhanced);
+  return `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
+}
+async function generateVideoFromPrompt(prompt){
+  // محاولة فيديو حقيقي عبر Pollinations إن توفر، مع بديل إطارات متحركة من صور مولَّدة
+  const p=(prompt||"cinematic ocean waves at sunset").slice(0,120);
+  const seed=Math.floor(Math.random()*1000000);
+  const videoUrl=`https://pollinations.ai/p/${encodeURIComponent(p)}?width=768&height=432&seed=${seed}&nologo=true`;
+  // نتحقق بسرعة؛ إن فشل نستخدم صور متتابعة كفيديو
+  try{
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),4000);
+    const head=await fetch(videoUrl,{method:"GET",signal:ctrl.signal}).catch(()=>null);
+    clearTimeout(t);
+    if(head&&head.ok){
+      const ct=(head.headers.get("content-type")||"");
+      if(ct.includes("video")||ct.includes("octet")) return videoUrl;
+    }
+  }catch(e){}
+  // بديل احترافي أكثر: صورة حقيقية من Flux ثم تحريك خفيف عبر Canvas
+  const imgUrl=generateImagePollinations(p+", cinematic still frame");
+  const img=await new Promise((resolve,reject)=>{
+    const im=new Image();
+    im.crossOrigin="anonymous";
+    im.onload=()=>resolve(im);
+    im.onerror=()=>reject(new Error("image load failed"));
+    im.src=imgUrl;
+  }).catch(()=>null);
+  const canvas=document.createElement("canvas");canvas.width=768;canvas.height=432;
+  const ctx=canvas.getContext("2d");
+  let frame=0;
+  return new Promise(resolve=>{
+    let mime="video/webm";
+    try{if(!MediaRecorder.isTypeSupported(mime)) mime="video/webm;codecs=vp8";}catch(e){}
+    const stream=canvas.captureStream(24);
+    const recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2500000});
+    const chunks=[];
+    recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+    recorder.onstop=()=>resolve(URL.createObjectURL(new Blob(chunks,{type:mime})));
+    recorder.start(100);
+    function draw(){
+      const t=frame/24;
+      ctx.fillStyle="#0b0f19";ctx.fillRect(0,0,768,432);
+      if(img){
+        const zoom=1+0.08*Math.sin(t*0.7);
+        const w=768*zoom,h=432*zoom;
+        ctx.drawImage(img,(768-w)/2,(432-h)/2,w,h);
+      } else {
+        const g=ctx.createLinearGradient(0,0,768,432);
+        g.addColorStop(0,`hsl(${(t*40)%360},60%,30%)`);
+        g.addColorStop(1,`hsl(${(t*40+80)%360},55%,20%)`);
+        ctx.fillStyle=g;ctx.fillRect(0,0,768,432);
+      }
+      ctx.fillStyle="rgba(0,0,0,0.4)";ctx.fillRect(0,360,768,72);
+      ctx.fillStyle="#fff";ctx.font="bold 18px Arial";ctx.textAlign="center";
+      ctx.fillText((p||"").slice(0,50),384,395);
+      frame++;
+      if(frame<72) requestAnimationFrame(draw);
+      else setTimeout(()=>{try{recorder.stop();}catch(e){}},120);
+    }
+    draw();
+  });
+}
 function solveMathPro(text){
   try{
     let expr=text.replace("حل المعادلة:","").replace("حل:","").replace("solve:","").trim();
@@ -699,12 +904,33 @@ async function processMessage(text){
     return;
   }
 
-  if(lower.startsWith("صورة:")||lower.startsWith("image:")){let p=text.replace(/صورة:|image:/i,"").trim();appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();const url=generateImagePollinations(p||"mosque");appendMessage("", "ai", true, "Pollinations AI", `<div>🎨 ${p}</div><img src="${url}" style="width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)">`);return;}
-  if(lower.startsWith("فيديو:")||lower.startsWith("video:")){let p=text.replace(/فيديو:|video:/i,"").trim();appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage("🎬 جاري إنشاء الفيديو...","ai",false);const vurl=await generateVideoCanvas(p||"ocean");const html=`<div>🎬 ${p}</div><video src="${vurl}" controls style="width:100%;border-radius:12px;margin-top:8px"></video>`;appendMessage("", "ai", true, "Canvas Video", html);return;}
+  if(lower.startsWith("صورة:")||lower.startsWith("image:")||/^أنشئ\s*صورة/.test(lower)||/^انشئ\s*صورة/.test(lower)||lower.includes("ولد صورة")||lower.includes("generate image")){
+    let p=text.replace(/صورة:|image:|أنشئ صورة|انشئ صورة|ولد صورة|generate image/gi,"").replace(/^[:\s]+/,"").trim();
+    appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
+    appendMessage("🎨 جاري إنشاء صورة احترافية حسب طلبك...","ai",false);
+    const url=generateImagePollinations(p||"beautiful cinematic scene, ultra detailed");
+    const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري إنشاء صورة")>=0)last.remove();
+    appendMessage("","ai",true,"إنشاء صورة - Flux/Pollinations",`<div>🎨 ${p||"صورة"}</div><img src="${url}" style="width:100%;border-radius:12px;margin-top:8px" onclick="openEditor(this.src)" onerror="this.alt='تعذر التحميل'">`);
+    return;
+  }
+  if(lower.startsWith("فيديو:")||lower.startsWith("video:")||/^أنشئ\s*فيديو/.test(lower)||/^انشئ\s*فيديو/.test(lower)||lower.includes("generate video")){
+    let p=text.replace(/فيديو:|video:|أنشئ فيديو|انشئ فيديو|generate video/gi,"").replace(/^[:\s]+/,"").trim();
+    appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
+    appendMessage("🎬 جاري إنشاء فيديو حسب وصفك...","ai",false);
+    try{
+      const vurl=await generateVideoFromPrompt(p||"cinematic ocean at sunset");
+      const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري إنشاء فيديو")>=0)last.remove();
+      appendMessage("","ai",true,"إنشاء فيديو",`<div>🎬 ${p||"فيديو"}</div><video src="${vurl}" controls autoplay loop style="width:100%;border-radius:12px;margin-top:8px"></video>`);
+    }catch(err){
+      const last=chatContainer&&chatContainer.lastChild;if(last&&last.textContent&&last.textContent.indexOf("جاري إنشاء فيديو")>=0)last.remove();
+      appendMessage("تعذر إنشاء الفيديو حالياً. جرّب وصفاً أقصر أو أنشئ صورة بدل ذلك.","ai",true,"خطأ");
+    }
+    return;
+  }
   if(lower.includes("حل")||text.match(/[0-9x+\-*/^=]/)){const mr=solveMathPro(text);if(mr){appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();appendMessage(mr,"ai",true,"Math.js");return;}}
   appendMessage(text,"user");userInput.value="";incrementCount();updateLimitUI();updateSendIcon();
   let reply=null,source=null;
-  const codingRoots = ["كود", "كيف أصمم", "برمجة", "خطأ", "html", "css", "javascript", "دالة", "تصحيح", "script", "code", "bug", "function", "python", "java"];
+  const codingRoots = ["كود","كيف أصمم","برمجة","خطأ","html","css","javascript","دالة","تصحيح","script","code","bug","function","python","java","typescript","react","node","sql","api","debug","compile","syntax","برمج","صلح الكود","اكتب برنامج","algorithm","خوارزم"];
   const isCodingQuery = codingRoots.some(root => lower.includes(root));
   if(!isCodingQuery){
     for(const item of chatKnowledge){
@@ -725,8 +951,14 @@ async function processMessage(text){
   let result=null;
   let resultSource=null;
   if(isCodingQuery){
-    result = await fetchGemalotMultiSource(text);
-    if(result) resultSource = "مصادر تقنية ومفتوحة متعددة (MDN/DuckDuckGo) - دالة برمجة";
+    try{
+      result = await askCodeGemini(text);
+      if(result) resultSource = "Gemini - مساعدة برمجة";
+    }catch(e){}
+    if(!result){
+      result = await fetchGemalotMultiSource(text);
+      if(result) resultSource = "مصادر تقنية (MDN/DuckDuckGo)";
+    }
   }
   if(!result){
     const web=await searchAllSources(text,replyLang);
